@@ -42,3 +42,7 @@ pidfile ENV.fetch("PIDFILE") { "tmp/pids/server.pid" }
 
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
+
+# Run SolidQueue inside Puma so background jobs are processed
+# without needing a separate worker process.
+plugin :solid_queue if rails_env == "production"
