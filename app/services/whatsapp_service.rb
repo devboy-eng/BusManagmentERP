@@ -146,17 +146,13 @@ class WhatsappService
   end
 
   def build_template_payload(template)
-    # Meta requires: lowercase, alphanumeric + underscores only for name
+    # Meta requires: lowercase, alphanumeric + underscores only, max 512 chars
     meta_name = template.name.downcase.gsub(/[^a-z0-9_]/, "_").gsub(/_+/, "_").gsub(/\A_|_\z/, "")
-
-    # Meta requires locale codes (en_US), not bare language codes (en)
-    language = template.language || "en_US"
-    language = "en_US" if language == "en"
 
     {
       name: meta_name,
-      language: language,
-      category: (template.category || "MARKETING").upcase,
+      language: template.language || "en",
+      category: template.category || "marketing",
       allow_category_change: true,
       components: build_components(template)
     }
@@ -168,7 +164,14 @@ class WhatsappService
     # Header component
     case template.header_type
     when "text"
-      components << { type: "HEADER", format: "TEXT", text: template.header_text } if template.header_text.present?
+      if template.header_text.present?
+        header = { type: "HEADER", format: "TEXT", text: template.header_text }
+        # If header has variables like {{1}}, provide example values
+        if template.header_text.match?(/\{\{.*?\}\}/)
+          header[:example] = { header_text: [extract_example_values(template.header_text).first || "Sample"] }
+        end
+        components << header
+      end
     when "image"
       components << { type: "HEADER", format: "IMAGE", example: { header_handle: [template.header_media_url] } } if template.header_media_url.present?
     when "video"
@@ -177,12 +180,22 @@ class WhatsappService
       components << { type: "HEADER", format: "DOCUMENT", example: { header_handle: [template.header_media_url] } } if template.header_media_url.present?
     end
 
-    # Body component
-    components << { type: "BODY", text: template.body }
+    # Body component (required)
+    body = { type: "BODY", text: template.body }
+    # If body has variables like {{1}} or {{name}}, provide example values
+    if template.body.match?(/\{\{.*?\}\}/)
+      examples = extract_example_values(template.body)
+      body[:example] = { body_text: [examples] }
+    end
+    components << body
 
-    # Footer component
+    # Footer component (text only, max 60 chars, no variables)
     components << { type: "FOOTER", text: template.footer } if template.footer.present?
 
     components
+  end
+
+  def extract_example_values(text)
+    text.scan(/\{\{.*?\}\}/).map { |_| "Sample" }
   end
 end
