@@ -1,0 +1,78 @@
+<%= form_with(model: user, class: "space-y-5") do |f| %>
+  <% if user.errors.any? %>
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+      <ul class="list-disc list-inside text-xs text-red-600">
+        <% user.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Name</label>
+      <%= f.text_field :name, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Full name" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Email</label>
+      <%= f.email_field :email, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Email address" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone</label>
+      <%= f.text_field :phone, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Phone number" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Role</label>
+      <%= f.collection_select :role_id, Role.all, :id, :name, { include_blank: "Select Role" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Password<%= " (leave blank to keep current)" unless user.new_record? %></label>
+      <%= f.password_field :password, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Password" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Confirm Password</label>
+      <%= f.password_field :password_confirmation, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Confirm password" %>
+    </div>
+  </div>
+
+  <% unless user.new_record? %>
+    <div class="flex items-center gap-4">
+      <label class="block text-xs font-medium text-gray-600">Status</label>
+      <div class="flex items-center gap-3">
+        <label class="inline-flex items-center gap-2 cursor-pointer">
+          <%= f.radio_button :active, true, class: "text-green-600 focus:ring-green-500" %>
+          <span class="text-xs font-medium text-green-700">Active</span>
+        </label>
+        <label class="inline-flex items-center gap-2 cursor-pointer">
+          <%= f.radio_button :active, false, class: "text-red-600 focus:ring-red-500" %>
+          <span class="text-xs font-medium text-red-700">Inactive</span>
+        </label>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Feature Permissions -->
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-3">Feature Permissions</label>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <% User::FEATURES.each do |key, label| %>
+        <% enabled = user.permissions&.dig(key.to_s) != false %>
+        <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3" data-controller="toggle">
+          <span class="text-xs font-medium text-gray-700"><%= label %></span>
+          <input type="hidden" name="user[permissions][<%= key %>]" value="0">
+          <input type="checkbox" name="user[permissions][<%= key %>]" value="1" class="hidden" data-toggle-target="checkbox" <%= "checked" if enabled %>>
+          <button type="button" data-action="click->toggle#toggle"
+            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 <%= enabled ? 'bg-indigo-600' : 'bg-gray-200' %>"
+            data-toggle-target="bg">
+            <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform <%= enabled ? 'translate-x-5' : 'translate-x-1' %>"
+              data-toggle-target="dot"></span>
+          </button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3 pt-2">
+    <%= f.submit class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+    <%= link_to "Cancel", users_path, class: "rounded-lg border border-gray-300 px-6 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" %>
+  </div>
+<% end %>

@@ -1,0 +1,101 @@
+<%= form_with(model: @template, data: { controller: "template-form" }) do |f| %>
+  <div class="flex gap-8 items-start">
+    <%# Left column — Form fields in a card %>
+    <div class="flex-1 min-w-0">
+      <div class="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+        <% if @template.errors.any? %>
+          <div class="rounded-lg bg-red-50 border border-red-200 p-3">
+            <% @template.errors.full_messages.each do |message| %>
+              <p class="text-xs text-red-700"><%= message %></p>
+            <% end %>
+          </div>
+        <% end %>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Template Name</label>
+          <%= f.text_field :name, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Welcome Message" %>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Language</label>
+            <%= f.select :language, WhatsappTemplate::LANGUAGES.map { |code, name| [name, code] }, {}, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+            <%= f.select :category, WhatsappTemplate::CATEGORIES.map { |c| [c.titleize, c] }, { include_blank: "Select category" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Header Type</label>
+          <%= f.select :header_type, WhatsappTemplate::HEADER_TYPES.map { |t| [t.titleize, t] }, {}, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", data: { template_form_target: "headerTypeSelect", action: "template-form#headerTypeChanged" } %>
+        </div>
+
+        <%# Conditional: Header Text %>
+        <div class="<%= 'hidden' unless @template.header_type == 'text' %>" data-template-form-target="headerTextField">
+          <div class="flex items-center gap-1.5 mb-1">
+            <label class="block text-xs font-medium text-gray-700">Header Text</label>
+            <div class="relative group">
+              <button type="button" class="flex items-center justify-center h-4 w-4 rounded-full bg-gray-200 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 transition text-[9px] font-bold leading-none">i</button>
+              <div class="hidden group-hover:block absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 w-56 rounded-lg bg-gray-900 text-white p-2.5 text-[11px] leading-relaxed shadow-lg z-50">
+                <p class="font-medium mb-1">Variables in Header</p>
+                <p class="text-gray-300">Use <span class="font-mono bg-gray-700 px-1 rounded">{{1}}</span> for a single variable in the header text.</p>
+                <p class="text-gray-400 mt-1">Example: <span class="italic">Hi {{1}}, welcome!</span></p>
+                <div class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+              </div>
+            </div>
+          </div>
+          <%= f.text_field :header_text, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Hello {{1}}!", data: { template_form_target: "headerTextInput", action: "input->template-form#updatePreview" } %>
+        </div>
+
+        <%# Conditional: Header Media URL %>
+        <div class="<%= 'hidden' unless @template.header_type.in?(%w[image video document]) %>" data-template-form-target="headerMediaField">
+          <label class="block text-xs font-medium text-gray-700 mb-1">Header Media URL</label>
+          <%= f.text_field :header_media_url, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "https://example.com/image.jpg", data: { template_form_target: "headerMediaInput", action: "input->template-form#updatePreview" } %>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Footer <span class="text-gray-400 font-normal">(Optional)</span></label>
+          <%= f.text_field :footer, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Reply STOP to opt out", data: { template_form_target: "footerInput", action: "input->template-form#updatePreview" } %>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-1.5 mb-1">
+            <label class="block text-xs font-medium text-gray-700">Message Body</label>
+            <div class="relative group">
+              <button type="button" class="flex items-center justify-center h-4 w-4 rounded-full bg-gray-200 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 transition text-[9px] font-bold leading-none">i</button>
+              <div class="hidden group-hover:block absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 w-64 rounded-lg bg-gray-900 text-white p-3 text-[11px] leading-relaxed shadow-lg z-50">
+                <p class="font-medium mb-1.5">Using Variables</p>
+                <p class="text-gray-300">Add dynamic content with numbered placeholders:</p>
+                <div class="mt-1.5 space-y-1 text-gray-300">
+                  <p><span class="font-mono bg-gray-700 px-1 rounded">{{1}}</span> — Customer name</p>
+                  <p><span class="font-mono bg-gray-700 px-1 rounded">{{2}}</span> — Order number, date, etc.</p>
+                  <p><span class="font-mono bg-gray-700 px-1 rounded">{{3}}</span> — Any additional info</p>
+                </div>
+                <div class="mt-2 p-2 rounded bg-gray-800 text-gray-300">
+                  <p class="text-gray-500 text-[10px] mb-0.5">Example:</p>
+                  <p class="italic">Hi {{1}}, your order {{2}} has been shipped and will arrive by {{3}}.</p>
+                </div>
+                <p class="text-gray-500 mt-1.5 text-[10px]">Variables are replaced with actual values when the message is sent.</p>
+                <div class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+              </div>
+            </div>
+          </div>
+          <%= f.text_area :body, rows: 6, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Hi {{1}}, your order {{2}} has been confirmed.", data: { template_form_target: "bodyInput", action: "input->template-form#updatePreview" } %>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <%= f.submit class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+          <%= link_to "Cancel", whatsapp_templates_path, class: "rounded-lg border border-gray-300 px-6 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" %>
+        </div>
+      </div>
+    </div>
+
+    <%# Right column — Phone preview %>
+    <div class="w-80 flex-shrink-0">
+      <%= render "whatsapp_preview" %>
+    </div>
+  </div>
+<% end %>

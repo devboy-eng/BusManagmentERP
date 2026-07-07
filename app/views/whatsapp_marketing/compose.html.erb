@@ -1,0 +1,71 @@
+<% content_for :page_title, "Compose WhatsApp Message" %>
+
+<div class="max-w-4xl">
+  <div class="mb-6">
+    <h2 class="text-lg font-semibold text-gray-900">Compose Message - <%= @type.titleize %></h2>
+    <p class="text-xs text-gray-500 mt-1">Select recipients and compose your message</p>
+  </div>
+
+  <% unless WhatsappSetting.configured? %>
+    <div class="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4 flex items-center gap-3">
+      <svg class="h-5 w-5 text-yellow-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+      <p class="text-xs text-yellow-800">WhatsApp API not configured. <%= link_to "Configure now", edit_whatsapp_setting_path, class: "underline font-medium" %></p>
+    </div>
+  <% end %>
+
+  <%= form_tag send_message_whatsapp_marketing_index_path, method: :post do %>
+    <%= hidden_field_tag :type, @type %>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Recipients -->
+      <div class="rounded-xl border border-gray-200 bg-white p-6">
+        <h3 class="text-sm font-semibold text-gray-900 mb-4">Select Recipients</h3>
+        <div class="space-y-2 max-h-80 overflow-y-auto">
+          <% @recipients.each do |recipient| %>
+            <label class="flex items-center gap-3 rounded-lg bg-gray-50 p-3 cursor-pointer hover:bg-gray-100 transition">
+              <%= check_box_tag "recipient_ids[]", recipient.id, false, class: "h-4 w-4 rounded border-gray-300 bg-white text-indigo-600 focus:ring-indigo-500" %>
+              <div>
+                <p class="text-xs font-medium text-gray-900"><%= recipient.name %></p>
+                <p class="text-[11px] text-gray-500"><%= recipient.phone %></p>
+              </div>
+            </label>
+          <% end %>
+          <% if @recipients.empty? %>
+            <p class="text-xs text-gray-500 text-center py-4">No <%= @type %> available.</p>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Message -->
+      <div class="rounded-xl border border-gray-200 bg-white p-6">
+        <h3 class="text-sm font-semibold text-gray-900 mb-4">Message</h3>
+        <%= text_area_tag :message, nil, rows: 8, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Type your promotional message here..." %>
+
+        <% if @templates.any? %>
+          <div class="mt-4 rounded-lg bg-gray-50 p-3">
+            <p class="text-[11px] font-medium text-gray-600 mb-2">Message Templates</p>
+            <div class="space-y-2">
+              <% @templates.each do |template| %>
+                <button type="button" class="w-full text-left rounded-lg bg-gray-100 p-2 text-[11px] text-gray-600 hover:bg-gray-200 transition" onclick="document.querySelector('textarea[name=message]').value = '<%= j template.body %>'">
+                  <span class="font-medium"><%= template.name %></span>
+                  <% if template.category.present? %>
+                    <span class="text-gray-400 ml-1">(<%= template.category %>)</span>
+                  <% end %>
+                </button>
+              <% end %>
+            </div>
+          </div>
+        <% else %>
+          <div class="mt-4 rounded-lg bg-gray-50 p-3">
+            <p class="text-[11px] text-gray-500">No templates yet. <%= link_to "Create one", new_whatsapp_template_path, class: "text-indigo-600 hover:text-indigo-500" %></p>
+          </div>
+        <% end %>
+
+        <div class="flex items-center gap-3 mt-4">
+          <%= submit_tag "Send Message", class: "rounded-lg bg-green-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-green-500 transition cursor-pointer" %>
+          <%= link_to "Cancel", whatsapp_marketing_index_path, class: "rounded-lg border border-gray-300 px-6 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

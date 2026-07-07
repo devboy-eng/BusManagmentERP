@@ -1,0 +1,3 @@
+web: bin/rails server -p 7070
+css: bin/rails tailwindcss:watch -- --poll
+worker: bundle exec rake solid_queue:start

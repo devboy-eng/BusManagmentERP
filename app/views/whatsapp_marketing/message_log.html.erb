@@ -1,0 +1,67 @@
+<% content_for :page_title, "Message Log" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900">WhatsApp Message Log</h2>
+    <p class="text-xs text-gray-500 mt-1">History of all sent WhatsApp messages</p>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="mb-4 flex items-center gap-3">
+  <%= form_tag message_log_whatsapp_marketing_index_path, method: :get, class: "flex items-center gap-3 flex-1" do %>
+    <div class="flex-1 max-w-xs">
+      <%= text_field_tag :search, params[:search], class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Search by name, phone, or message..." %>
+    </div>
+    <div>
+      <%= select_tag :status, options_for_select([["All Statuses", ""], "queued", "sent", "delivered", "read", "failed"], params[:status]), class: "rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+    <%= submit_tag "Filter", class: "rounded-lg bg-gray-100 border border-gray-300 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 transition cursor-pointer" %>
+    <% if params[:search].present? || params[:status].present? %>
+      <%= link_to "Clear", message_log_whatsapp_marketing_index_path, class: "text-xs text-indigo-600 hover:text-indigo-500" %>
+    <% end %>
+  <% end %>
+</div>
+
+<div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+  <% if @messages.any? %>
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead>
+        <tr class="bg-gray-50">
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Recipient</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Phone</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Message</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Status</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Sent At</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @messages.each do |msg| %>
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-4 py-3">
+              <p class="text-xs font-medium text-gray-900"><%= msg.recipient_name %></p>
+              <p class="text-[11px] text-gray-400"><%= msg.recipient_type %></p>
+            </td>
+            <td class="px-4 py-3 text-xs text-gray-500"><%= msg.recipient_phone %></td>
+            <td class="px-4 py-3 text-xs text-gray-500 max-w-xs truncate"><%= truncate(msg.message_body, length: 60) %></td>
+            <td class="px-4 py-3">
+              <%= whatsapp_status_badge(msg.status) %>
+              <% if msg.failed? && msg.error_message.present? %>
+                <p class="text-[11px] text-red-500 mt-1 max-w-xs truncate" title="<%= msg.error_message %>"><%= truncate(msg.error_message, length: 40) %></p>
+              <% end %>
+            </td>
+            <td class="px-4 py-3 text-xs text-gray-500"><%= msg.created_at.strftime("%d %b %Y, %I:%M %p") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <div class="border-t border-gray-200 px-4 py-3">
+      <%== pagy_nav(@pagy) %>
+    </div>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-xs text-gray-500">No messages found.</p>
+    </div>
+  <% end %>
+</div>

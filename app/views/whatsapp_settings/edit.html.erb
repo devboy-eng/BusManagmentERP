@@ -1,0 +1,98 @@
+<% content_for :page_title, "WhatsApp Settings" %>
+
+<div class="max-w-2xl">
+  <div class="mb-6">
+    <h2 class="text-lg font-semibold text-gray-900">WhatsApp Cloud API Configuration</h2>
+    <p class="text-xs text-gray-500 mt-1">Configure your Meta WhatsApp Business API credentials</p>
+  </div>
+
+  <div class="rounded-xl border border-gray-200 bg-white p-6">
+    <%= form_with(model: @setting, url: whatsapp_setting_path, method: :patch) do |f| %>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number ID</label>
+          <%= f.text_field :phone_number_id, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
+          <p class="mt-1 text-[11px] text-gray-400">Found in your Meta App Dashboard under WhatsApp > API Setup</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Access Token</label>
+          <%= f.text_field :access_token, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Your permanent access token" %>
+          <p class="mt-1 text-[11px] text-gray-400">Use a permanent token from System Users in Business Settings</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Business Account ID (Optional)</label>
+          <%= f.text_field :business_account_id, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
+        </div>
+
+        <div class="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
+          <%= f.check_box :active, class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+          <div>
+            <label class="text-xs font-medium text-gray-700">Active</label>
+            <p class="text-[11px] text-gray-400">Enable WhatsApp messaging</p>
+          </div>
+        </div>
+
+        <% if @setting.errors.any? %>
+          <div class="rounded-lg bg-red-50 border border-red-200 p-3">
+            <% @setting.errors.full_messages.each do |message| %>
+              <p class="text-xs text-red-700"><%= message %></p>
+            <% end %>
+          </div>
+        <% end %>
+
+        <div class="flex items-center gap-3 pt-2">
+          <%= f.submit "Save Settings", class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Test Connection -->
+  <div class="mt-6 rounded-xl border border-gray-200 bg-white p-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-2">Test Connection</h3>
+    <p class="text-xs text-gray-500 mb-4">Verify that your API credentials are working correctly.</p>
+    <%= form_tag test_connection_whatsapp_setting_path, method: :post do %>
+      <%= submit_tag "Test Connection", class: "rounded-lg bg-green-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-green-500 transition cursor-pointer" %>
+    <% end %>
+  </div>
+
+  <!-- Webhook Configuration -->
+  <div class="mt-6 rounded-xl border border-gray-200 bg-white p-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-2">Webhook Configuration</h3>
+    <p class="text-xs text-gray-500 mb-4">Copy these values into your Meta App Dashboard under WhatsApp &gt; Configuration &gt; Webhook.</p>
+
+    <%= form_with(model: @setting, url: whatsapp_setting_path, method: :patch) do |f| %>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Callback URL</label>
+          <div class="flex gap-2">
+            <% callback_url = (@setting.webhook_url.presence || request.base_url) + "/webhooks/whatsapp" %>
+            <input type="text" value="<%= callback_url %>" readonly class="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-xs text-gray-900 focus:outline-none" id="webhook-callback-url">
+            <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('webhook-callback-url').value).then(() => this.textContent = 'Copied!')" class="rounded-lg bg-gray-100 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-200 transition">Copy</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Webhook Base URL</label>
+          <%= f.text_field :webhook_url, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. https://humble-laziness-recapture.ngrok-free.dev" %>
+          <p class="mt-1 text-[11px] text-gray-400">Your public-facing domain (ngrok, Render, etc.). The Callback URL above updates on save.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Verify Token</label>
+          <div class="flex gap-2">
+            <%= f.text_field :verify_token, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", id: "webhook-verify-token" %>
+            <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('webhook-verify-token').value).then(() => this.textContent = 'Copied!')" class="rounded-lg bg-gray-100 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-200 transition">Copy</button>
+          </div>
+          <p class="mt-1 text-[11px] text-gray-400">Auto-generated. You can change it if needed.</p>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <%= f.submit "Save Webhook Settings", class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

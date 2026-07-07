@@ -1,0 +1,72 @@
+<% content_for :page_title, "Follow-ups" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900">Scheduled Follow-ups</h2>
+    <p class="text-xs text-gray-500 mt-1">Manage automated WhatsApp follow-up reminders</p>
+  </div>
+  <%= link_to new_follow_up_path, class: "inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition" do %>
+    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+    Schedule Follow-up
+  <% end %>
+</div>
+
+<!-- Status Filter -->
+<div class="mb-4 flex items-center gap-2">
+  <%= link_to "All", follow_ups_path, class: "rounded-lg px-3 py-1.5 text-xs font-medium transition #{params[:status].blank? ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}" %>
+  <%= link_to "Pending", follow_ups_path(status: :pending), class: "rounded-lg px-3 py-1.5 text-xs font-medium transition #{params[:status] == 'pending' ? 'bg-yellow-50 text-yellow-700' : 'text-gray-500 hover:bg-gray-100'}" %>
+  <%= link_to "Sent", follow_ups_path(status: :sent), class: "rounded-lg px-3 py-1.5 text-xs font-medium transition #{params[:status] == 'sent' ? 'bg-green-50 text-green-700' : 'text-gray-500 hover:bg-gray-100'}" %>
+  <%= link_to "Failed", follow_ups_path(status: :failed), class: "rounded-lg px-3 py-1.5 text-xs font-medium transition #{params[:status] == 'failed' ? 'bg-red-50 text-red-700' : 'text-gray-500 hover:bg-gray-100'}" %>
+  <%= link_to "Cancelled", follow_ups_path(status: :cancelled), class: "rounded-lg px-3 py-1.5 text-xs font-medium transition #{params[:status] == 'cancelled' ? 'bg-gray-100 text-gray-700' : 'text-gray-500 hover:bg-gray-100'}" %>
+</div>
+
+<div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+  <% if @follow_ups.any? %>
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead>
+        <tr class="bg-gray-50">
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Lead</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Message</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Scheduled At</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Status</th>
+          <th class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @follow_ups.each do |follow_up| %>
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-4 py-3">
+              <p class="text-xs font-medium text-gray-900"><%= follow_up.lead.name %></p>
+              <p class="text-[11px] text-gray-400"><%= follow_up.lead.phone %></p>
+            </td>
+            <td class="px-4 py-3 text-xs text-gray-500 max-w-xs truncate"><%= truncate(follow_up.message, length: 60) %></td>
+            <td class="px-4 py-3 text-xs text-gray-500"><%= follow_up.scheduled_at.strftime("%d %b %Y, %I:%M %p") %></td>
+            <td class="px-4 py-3">
+              <%= follow_up_status_badge(follow_up.status) %>
+              <% if follow_up.failed? && follow_up.error_message.present? %>
+                <p class="text-[11px] text-red-500 mt-1"><%= truncate(follow_up.error_message, length: 40) %></p>
+              <% end %>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <% if follow_up.pending? %>
+                  <%= link_to cancel_follow_up_path(follow_up), data: { turbo_method: :patch, turbo_confirm: "Cancel this follow-up?" }, class: "text-yellow-600 hover:text-yellow-500 text-xs" do %>Cancel<% end %>
+                <% end %>
+                <%= link_to follow_up_path(follow_up), data: { turbo_method: :delete, turbo_confirm: "Delete this follow-up?" }, class: "text-red-600 hover:text-red-500 text-xs" do %>Delete<% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <div class="border-t border-gray-200 px-4 py-3">
+      <%== pagy_nav(@pagy) %>
+    </div>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-xs text-gray-500">No follow-ups found.</p>
+      <p class="text-xs text-gray-400 mt-1"><%= link_to "Schedule a follow-up", new_follow_up_path, class: "text-indigo-600 hover:text-indigo-500" %> to get started.</p>
+    </div>
+  <% end %>
+</div>
