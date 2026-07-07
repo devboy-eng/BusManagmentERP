@@ -144,9 +144,16 @@ class WhatsappService
   end
 
   def build_template_payload(template)
+    # Meta requires: lowercase, alphanumeric + underscores only for name
+    meta_name = template.name.downcase.gsub(/[^a-z0-9_]/, "_").gsub(/_+/, "_").gsub(/\A_|_\z/, "")
+
+    # Meta requires locale codes (en_US), not bare language codes (en)
+    language = template.language || "en_US"
+    language = "en_US" if language == "en"
+
     {
-      name: template.name,
-      language: template.language || "en",
+      name: meta_name,
+      language: language,
       category: (template.category || "marketing").upcase,
       components: build_components(template)
     }
