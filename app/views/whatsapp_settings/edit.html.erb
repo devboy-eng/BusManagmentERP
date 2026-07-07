@@ -1,5 +1,7 @@
 <% content_for :page_title, "WhatsApp Settings" %>
 
+<% meta_link_class = "rounded-lg bg-blue-50 px-2.5 py-2.5 text-[11px] font-medium text-blue-600 hover:bg-blue-100 transition whitespace-nowrap" %>
+
 <div class="max-w-2xl">
   <div class="mb-6">
     <h2 class="text-lg font-semibold text-gray-900">WhatsApp Cloud API Configuration</h2>
@@ -11,30 +13,40 @@
       <div class="space-y-4">
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number ID</label>
-          <%= f.text_field :phone_number_id, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
-          <p class="mt-1 text-[11px] text-gray-400">Found in your Meta App Dashboard under WhatsApp > API Setup</p>
+          <div class="flex gap-2">
+            <%= f.text_field :phone_number_id, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
+            <a href="https://developers.facebook.com/apps/<%= @setting.app_id.presence || '{app-id}' %>/whatsapp-business/wa-dev-console/" target="_blank" class="<%= meta_link_class %>">API Setup</a>
+          </div>
+          <p class="mt-1 text-[11px] text-gray-400">Found in WhatsApp > API Setup</p>
         </div>
 
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Access Token</label>
           <div class="flex gap-2">
             <%= f.text_field :access_token, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Your permanent access token" %>
+            <a href="https://business.facebook.com/settings/system-users/" target="_blank" class="<%= meta_link_class %>">System Users</a>
             <% if @setting.access_token.present? %>
-              <a href="https://developers.facebook.com/tools/debug/accesstoken/?access_token=<%= @setting.access_token %>" target="_blank" class="rounded-lg bg-amber-100 px-3 py-2.5 text-xs font-medium text-amber-700 hover:bg-amber-200 transition whitespace-nowrap">Debug Token</a>
+              <a href="https://developers.facebook.com/tools/debug/accesstoken/?access_token=<%= @setting.access_token %>" target="_blank" class="rounded-lg bg-amber-50 px-2.5 py-2.5 text-[11px] font-medium text-amber-600 hover:bg-amber-100 transition whitespace-nowrap">Debug</a>
             <% end %>
           </div>
-          <p class="mt-1 text-[11px] text-gray-400">Use a permanent token from System Users in Business Settings</p>
+          <p class="mt-1 text-[11px] text-gray-400">Use a permanent token from Business Settings > System Users</p>
         </div>
 
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Business Account ID (Optional)</label>
-          <%= f.text_field :business_account_id, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
+          <div class="flex gap-2">
+            <%= f.text_field :business_account_id, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
+            <a href="https://business.facebook.com/settings/whatsapp-business-accounts/" target="_blank" class="<%= meta_link_class %>">WA Accounts</a>
+          </div>
         </div>
 
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">App ID (Optional)</label>
-          <%= f.text_field :app_id, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
-          <p class="mt-1 text-[11px] text-gray-400">Found in Meta App Dashboard > App Settings > Basic</p>
+          <div class="flex gap-2">
+            <%= f.text_field :app_id, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
+            <a href="https://developers.facebook.com/apps/" target="_blank" class="<%= meta_link_class %>">My Apps</a>
+          </div>
+          <p class="mt-1 text-[11px] text-gray-400">Found in App Settings > Basic</p>
         </div>
 
         <div class="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
@@ -87,14 +99,26 @@
 
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Webhook Base URL</label>
-          <%= f.text_field :webhook_url, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. https://humble-laziness-recapture.ngrok-free.dev" %>
-          <p class="mt-1 text-[11px] text-gray-400">Your public-facing domain (ngrok, Render, etc.). The Callback URL above updates on save.</p>
+          <div class="flex gap-2">
+            <%= f.text_field :webhook_url, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. https://yourapp.onrender.com" %>
+            <% if @setting.app_id.present? %>
+              <a href="https://developers.facebook.com/apps/<%= @setting.app_id %>/whatsapp-business/wa-settings/" target="_blank" class="<%= meta_link_class %>">WA Config</a>
+            <% end %>
+          </div>
+          <p class="mt-1 text-[11px] text-gray-400">Your public-facing domain. The Callback URL above updates on save.</p>
         </div>
 
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">App Secret</label>
-          <%= f.text_field :app_secret, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Your Meta App Secret" %>
-          <p class="mt-1 text-[11px] text-gray-400">Found in Meta App Dashboard > App Settings > Basic. Used to verify webhook payloads.</p>
+          <div class="flex gap-2">
+            <%= f.text_field :app_secret, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Your Meta App Secret" %>
+            <% if @setting.app_id.present? %>
+              <a href="https://developers.facebook.com/apps/<%= @setting.app_id %>/settings/basic/" target="_blank" class="<%= meta_link_class %>">App Basic</a>
+            <% else %>
+              <a href="https://developers.facebook.com/apps/" target="_blank" class="<%= meta_link_class %>">App Basic</a>
+            <% end %>
+          </div>
+          <p class="mt-1 text-[11px] text-gray-400">Used to verify webhook payloads.</p>
         </div>
 
         <div>
