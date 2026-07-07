@@ -18,6 +18,7 @@ class FollowUpsController < ApplicationController
   def create
     @follow_up = current_user.follow_ups.build(follow_up_params)
     if @follow_up.save
+      ProcessScheduledFollowUpsJob.set(wait_until: @follow_up.scheduled_at).perform_later
       redirect_to follow_ups_path, notice: "Follow-up scheduled successfully."
     else
       @leads = Lead.order(:name)
