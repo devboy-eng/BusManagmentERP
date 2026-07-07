@@ -17,6 +17,17 @@ class WhatsappWebhooksController < ActionController::Base
 
   def receive
     payload = request.body.read
+    setting = WhatsappSetting.first
+
+    # Verify signature if app_secret is configured
+    if setting&.app_secret.present?
+      signature = request.headers["X-Hub-Signature-256"]
+      unless valid_signature?(payload, signature, setting.app_secret)
+        head :unauthorized
+        return
+      end
+    end
+
     data = JSON.parse(payload) rescue {}
 
     process_statuses(data)
@@ -25,6 +36,13 @@ class WhatsappWebhooksController < ActionController::Base
   end
 
   private
+
+  def valid_signature?(payload, signature, app_secret)
+    return false unless signature.present?
+
+    expected = "sha256=" + OpenSSL::HMAC.hexdigest("SHA256", app_secret, payload)
+    ActiveSupport::SecurityUtils.secure_compare(expected, signature)
+  end
 
   def process_statuses(data)
     entries = data.dig("entry") || []

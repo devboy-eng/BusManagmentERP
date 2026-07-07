@@ -37,6 +37,6 @@ class WhatsappSettingsController < ApplicationController
   private
 
   def setting_params
-    params.require(:whatsapp_setting).permit(:phone_number_id, :access_token, :business_account_id, :active, :webhook_url, :verify_token)
+    params.require(:whatsapp_setting).permit(:phone_number_id, :access_token, :business_account_id, :active, :webhook_url, :verify_token, :app_secret)
   end
 end
