@@ -50,6 +50,11 @@
             <td class="px-4 py-3 text-xs text-gray-500"><%= template.created_at.strftime("%d %b %Y") %></td>
             <td class="px-4 py-3 text-right">
               <div class="flex items-center justify-end gap-2">
+                <% if template.meta_template_id.blank? %>
+                  <%= link_to sync_to_meta_whatsapp_template_path(template), data: { turbo_method: :post, turbo_confirm: "Submit this template to Meta for approval?" }, class: "text-green-600 hover:text-green-500 text-xs font-medium" do %>Sync to Meta<% end %>
+                <% else %>
+                  <%= link_to sync_status_whatsapp_template_path(template), data: { turbo_method: :post }, class: "text-blue-600 hover:text-blue-500 text-xs font-medium" do %>Refresh Status<% end %>
+                <% end %>
                 <%= link_to edit_whatsapp_template_path(template), class: "text-indigo-600 hover:text-indigo-500 text-xs" do %>Edit<% end %>
                 <%= link_to whatsapp_template_path(template), data: { turbo_method: :delete, turbo_confirm: "Delete this template?" }, class: "text-red-600 hover:text-red-500 text-xs" do %>Delete<% end %>
               </div>

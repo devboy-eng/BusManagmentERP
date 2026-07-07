@@ -53,7 +53,13 @@ Rails.application.routes.draw do
     post :test_connection
   end
 
-  resources :whatsapp_templates, except: [:show]
+  resources :whatsapp_templates, except: [:show] do
+    member do
+      post :sync_to_meta
+      post :sync_status
+      post :delete_from_meta
+    end
+  end
 
   resources :follow_ups, only: [:index, :new, :create, :destroy] do
     member do
