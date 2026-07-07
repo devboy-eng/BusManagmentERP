@@ -1,5 +1,5 @@
 class WhatsappService
-  BASE_URL = "https://graph.facebook.com/v21.0".freeze
+  BASE_URL = "https://graph.facebook.com/v25.0".freeze
 
   class ApiError < StandardError; end
 
@@ -97,10 +97,12 @@ class WhatsappService
   def delete_template(template)
     return { success: false, error: "No Meta template ID" } unless template.meta_template_id.present?
 
+    meta_name = template.name.downcase.gsub(/[^a-z0-9_]/, "_").gsub(/_+/, "_").gsub(/\A_|_\z/, "")
+
     response = HTTParty.delete(
       "#{BASE_URL}/#{@setting.business_account_id}/message_templates",
       headers: { "Authorization" => "Bearer #{@access_token}" },
-      query: { name: template.name }
+      query: { name: meta_name }
     )
 
     if response.success?
@@ -154,7 +156,8 @@ class WhatsappService
     {
       name: meta_name,
       language: language,
-      category: (template.category || "marketing").upcase,
+      category: (template.category || "MARKETING").upcase,
+      allow_category_change: true,
       components: build_components(template)
     }
   end

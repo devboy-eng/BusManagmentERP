@@ -35,8 +35,10 @@ class WhatsappTemplate < ApplicationRecord
   validates :header_type, inclusion: { in: HEADER_TYPES }, allow_nil: true
   validates :category, inclusion: { in: CATEGORIES }, allow_nil: true
   validates :language, inclusion: { in: LANGUAGES.keys }, allow_nil: true
-  validates :header_text, presence: true, if: -> { header_type == "text" }
+  validates :header_text, presence: true, length: { maximum: 60 }, if: -> { header_type == "text" }
   validates :header_media_url, presence: true, if: -> { header_type.in?(%w[image video document]) }
+  validates :body, length: { maximum: 1024 }
+  validates :footer, length: { maximum: 60 }
 
   scope :ordered, -> { order(created_at: :desc) }
 
