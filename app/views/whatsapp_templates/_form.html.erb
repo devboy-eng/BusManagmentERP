@@ -11,6 +11,33 @@
           </div>
         <% end %>
 
+        <%# Template Type Chooser %>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Choose Template Type</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="relative cursor-pointer" data-action="click->template-form#selectTemplateType" data-template-type="standard">
+              <%= f.radio_button :template_type, "standard", class: "peer sr-only", data: { template_form_target: "templateTypeRadio" } %>
+              <div class="peer-checked:border-indigo-500 peer-checked:ring-1 peer-checked:ring-indigo-500 peer-checked:bg-indigo-50 rounded-lg border border-gray-300 p-3 transition hover:border-gray-400">
+                <div class="flex items-center gap-2 mb-1">
+                  <svg class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" /></svg>
+                  <span class="text-xs font-semibold text-gray-800">Header</span>
+                </div>
+                <p class="text-[11px] text-gray-500">Standard template with optional header, body, and footer</p>
+              </div>
+            </label>
+            <label class="relative cursor-pointer" data-action="click->template-form#selectTemplateType" data-template-type="carousel">
+              <%= f.radio_button :template_type, "carousel", class: "peer sr-only", data: { template_form_target: "templateTypeRadio" } %>
+              <div class="peer-checked:border-indigo-500 peer-checked:ring-1 peer-checked:ring-indigo-500 peer-checked:bg-indigo-50 rounded-lg border border-gray-300 p-3 transition hover:border-gray-400">
+                <div class="flex items-center gap-2 mb-1">
+                  <svg class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6.878V6a2.25 2.25 0 012.25-2.25h7.5A2.25 2.25 0 0118 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 004.5 9v.878m13.5-3A2.25 2.25 0 0119.5 9v.878m0 0a2.246 2.246 0 00-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0121 12v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6c0-1.013.67-1.871 1.59-2.154" /></svg>
+                  <span class="text-xs font-semibold text-gray-800">Carousel</span>
+                </div>
+                <p class="text-[11px] text-gray-500">Scrollable cards with images, text, and buttons (2-10 cards)</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Template Name</label>
           <%= f.text_field :name, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Welcome Message" %>
@@ -28,32 +55,46 @@
           </div>
         </div>
 
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-1">Header Type</label>
-          <%= f.select :header_type, WhatsappTemplate::HEADER_TYPES.map { |t| [t.titleize, t] }, {}, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", data: { template_form_target: "headerTypeSelect", action: "template-form#headerTypeChanged" } %>
-        </div>
+        <%# === Standard Template Fields === %>
+        <div data-template-form-target="standardFields" class="<%= 'hidden' if @template.carousel? %> space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Header Type</label>
+            <%= f.select :header_type, WhatsappTemplate::HEADER_TYPES.map { |t| [t.titleize, t] }, {}, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", data: { template_form_target: "headerTypeSelect", action: "template-form#headerTypeChanged" } %>
+          </div>
 
-        <%# Conditional: Header Text %>
-        <div class="<%= 'hidden' unless @template.header_type == 'text' %>" data-template-form-target="headerTextField">
-          <div class="flex items-center gap-1.5 mb-1">
-            <label class="block text-xs font-medium text-gray-700">Header Text</label>
-            <div class="relative group">
-              <button type="button" class="flex items-center justify-center h-4 w-4 rounded-full bg-gray-200 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 transition text-[9px] font-bold leading-none">i</button>
-              <div class="hidden group-hover:block absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 w-56 rounded-lg bg-gray-900 text-white p-2.5 text-[11px] leading-relaxed shadow-lg z-50">
-                <p class="font-medium mb-1">Variables in Header</p>
-                <p class="text-gray-300">Use <span class="font-mono bg-gray-700 px-1 rounded">{{1}}</span> for a single variable in the header text.</p>
-                <p class="text-gray-400 mt-1">Example: <span class="italic">Hi {{1}}, welcome!</span></p>
-                <div class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+          <%# Conditional: Header Text %>
+          <div class="<%= 'hidden' unless @template.header_type == 'text' %>" data-template-form-target="headerTextField">
+            <div class="flex items-center gap-1.5 mb-1">
+              <label class="block text-xs font-medium text-gray-700">Header Text</label>
+              <div class="relative group">
+                <button type="button" class="flex items-center justify-center h-4 w-4 rounded-full bg-gray-200 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 transition text-[9px] font-bold leading-none">i</button>
+                <div class="hidden group-hover:block absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 w-56 rounded-lg bg-gray-900 text-white p-2.5 text-[11px] leading-relaxed shadow-lg z-50">
+                  <p class="font-medium mb-1">Variables in Header</p>
+                  <p class="text-gray-300">Use <span class="font-mono bg-gray-700 px-1 rounded">{{1}}</span> for a single variable in the header text.</p>
+                  <p class="text-gray-400 mt-1">Example: <span class="italic">Hi {{1}}, welcome!</span></p>
+                  <div class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
               </div>
             </div>
+            <%= f.text_field :header_text, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Hello {{1}}!", data: { template_form_target: "headerTextInput", action: "input->template-form#updatePreview" } %>
           </div>
-          <%= f.text_field :header_text, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Hello {{1}}!", data: { template_form_target: "headerTextInput", action: "input->template-form#updatePreview" } %>
-        </div>
 
-        <%# Conditional: Header Media URL %>
-        <div class="<%= 'hidden' unless @template.header_type.in?(%w[image video document]) %>" data-template-form-target="headerMediaField">
-          <label class="block text-xs font-medium text-gray-700 mb-1">Header Media URL</label>
-          <%= f.text_field :header_media_url, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "https://example.com/image.jpg", data: { template_form_target: "headerMediaInput", action: "input->template-form#updatePreview" } %>
+          <%# Conditional: Header Media URL with upload %>
+          <div class="<%= 'hidden' unless @template.header_type.in?(%w[image video document]) %>" data-template-form-target="headerMediaField">
+            <label class="block text-xs font-medium text-gray-700 mb-1">Header Media</label>
+            <div data-controller="image-upload">
+              <div class="flex gap-2">
+                <%= f.text_field :header_media_url, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "https://example.com/image.jpg", data: { template_form_target: "headerMediaInput", action: "input->template-form#updatePreview", image_upload_target: "urlInput" } %>
+                <button type="button" data-action="image-upload#pick" data-image-upload-target="uploadBtn" class="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-2.5 text-[11px] font-medium text-gray-700 hover:bg-gray-200 transition whitespace-nowrap">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                  Upload
+                </button>
+                <input type="file" accept="image/*,video/*,.pdf,.doc,.docx" class="hidden" data-image-upload-target="fileInput" data-action="image-upload#upload">
+              </div>
+              <div class="hidden mt-2 h-20 w-20 rounded-lg border border-gray-200 overflow-hidden" data-image-upload-target="preview"></div>
+              <p class="hidden mt-1 text-[11px] text-green-600" data-image-upload-target="filename"></p>
+            </div>
+          </div>
         </div>
 
         <div>
@@ -86,6 +127,60 @@
           <%= f.text_area :body, rows: 6, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Hi {{1}}, your order {{2}} has been confirmed.", data: { template_form_target: "bodyInput", action: "input->template-form#updatePreview" } %>
         </div>
 
+        <%# === Carousel Cards Section === %>
+        <div data-template-form-target="carouselFields" class="<%= 'hidden' unless @template.carousel? %> space-y-4">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-medium text-gray-700">Carousel Cards <span class="text-gray-400 font-normal">(2-10 cards)</span></label>
+            <button type="button" data-action="template-form#addCard" class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-3 py-1.5 text-[11px] font-medium text-indigo-600 hover:bg-indigo-100 transition">
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+              Add Card
+            </button>
+          </div>
+
+          <div data-template-form-target="cardsContainer" class="grid grid-cols-2 gap-3">
+            <% cards = @template.parsed_carousel_cards %>
+            <% if cards.any? %>
+              <% cards.each_with_index do |card, i| %>
+                <div class="carousel-card rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3" data-card-index="<%= i %>">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-gray-700">Card <%= i + 1 %></span>
+                    <button type="button" data-action="template-form#removeCard" class="text-red-500 hover:text-red-600 transition">
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+                  <div data-controller="image-upload">
+                    <label class="block text-[11px] font-medium text-gray-600 mb-1">Card Image</label>
+                    <div class="flex gap-2">
+                      <input type="text" class="card-image-url flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="https://example.com/image.jpg" value="<%= card['image_url'] %>" data-action="input->template-form#updateCarouselData" data-image-upload-target="urlInput">
+                      <button type="button" data-action="image-upload#pick" data-image-upload-target="uploadBtn" class="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2.5 py-2 text-[11px] font-medium text-gray-700 hover:bg-gray-200 transition whitespace-nowrap">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                        Upload
+                      </button>
+                      <input type="file" accept="image/*" class="hidden" data-image-upload-target="fileInput" data-action="image-upload#upload">
+                    </div>
+                    <div class="hidden mt-1.5 h-16 w-16 rounded border border-gray-200 overflow-hidden" data-image-upload-target="preview"></div>
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-medium text-gray-600 mb-1">Card Body</label>
+                    <textarea class="card-body w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" rows="2" placeholder="Card description text" data-action="input->template-form#updateCarouselData"><%= card['body'] %></textarea>
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-medium text-gray-600 mb-1">Button Text <span class="text-gray-400 font-normal">(Optional)</span></label>
+                    <input type="text" class="card-button-text w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. View Details" value="<%= card.dig('button_text') %>" data-action="input->template-form#updateCarouselData">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-medium text-gray-600 mb-1">Button URL <span class="text-gray-400 font-normal">(Optional)</span></label>
+                    <input type="text" class="card-button-url w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="https://example.com/page" value="<%= card.dig('button_url') %>" data-action="input->template-form#updateCarouselData">
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+
+          <%# Hidden field to store carousel cards JSON %>
+          <%= f.hidden_field :carousel_cards, data: { template_form_target: "carouselCardsInput" } %>
+        </div>
+
         <div class="flex items-center gap-3 pt-2">
           <%= f.submit class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
           <%= link_to "Cancel", whatsapp_templates_path, class: "rounded-lg border border-gray-300 px-6 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" %>
@@ -93,8 +188,8 @@
       </div>
     </div>
 
-    <%# Right column — Phone preview %>
-    <div class="w-80 flex-shrink-0">
+    <%# Right column — Phone preview (sticky so it follows on scroll) %>
+    <div class="w-80 flex-shrink-0 sticky top-6 self-start">
       <%= render "whatsapp_preview" %>
     </div>
   </div>

@@ -53,6 +53,8 @@ Rails.application.routes.draw do
     post :test_connection
   end
 
+  resources :uploads, only: [:create]
+
   resources :whatsapp_templates, except: [:show] do
     member do
       post :sync_to_meta

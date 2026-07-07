@@ -13,11 +13,22 @@
       <div class="space-y-4">
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number ID</label>
-          <div class="flex gap-2">
-            <%= f.text_field :phone_number_id, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
-            <a href="https://developers.facebook.com/apps/<%= @setting.app_id.presence || '{app-id}' %>/whatsapp-business/wa-dev-console/" target="_blank" class="<%= meta_link_class %>">API Setup</a>
-          </div>
-          <p class="mt-1 text-[11px] text-gray-400">Found in WhatsApp > API Setup</p>
+          <% if @phone_numbers&.any? %>
+            <div class="flex gap-2">
+              <%= f.select :phone_number_id,
+                    @phone_numbers.map { |pn| ["#{pn['display_phone_number']} — #{pn['verified_name']} (#{pn['quality_rating']})", pn['id']] },
+                    { prompt: "Select a phone number" },
+                    class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+              <a href="https://developers.facebook.com/apps/<%= @setting.app_id.presence || '{app-id}' %>/whatsapp-business/wa-dev-console/" target="_blank" class="<%= meta_link_class %>">API Setup</a>
+            </div>
+            <p class="mt-1 text-[11px] text-gray-400">Select the phone number to use for sending messages</p>
+          <% else %>
+            <div class="flex gap-2">
+              <%= f.text_field :phone_number_id, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
+              <a href="https://developers.facebook.com/apps/<%= @setting.app_id.presence || '{app-id}' %>/whatsapp-business/wa-dev-console/" target="_blank" class="<%= meta_link_class %>">API Setup</a>
+            </div>
+            <p class="mt-1 text-[11px] text-gray-400">Enter manually, or save Access Token + Business Account ID to see available numbers</p>
+          <% end %>
         </div>
 
         <div>

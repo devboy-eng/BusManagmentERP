@@ -7,6 +7,8 @@ class WhatsappTemplate < ApplicationRecord
 
   CATEGORIES = %w[marketing utility authentication].freeze
 
+  TEMPLATE_TYPES = %w[standard carousel].freeze
+
   LANGUAGES = {
     "af" => "Afrikaans", "sq" => "Albanian", "ar" => "Arabic", "ar_EG" => "Arabic (Egypt)",
     "ar_AE" => "Arabic (UAE)", "ar_LB" => "Arabic (Lebanon)", "ar_MA" => "Arabic (Morocco)",
@@ -53,10 +55,12 @@ class WhatsappTemplate < ApplicationRecord
   validates :header_type, inclusion: { in: HEADER_TYPES }, allow_nil: true
   validates :category, inclusion: { in: CATEGORIES }, allow_nil: true
   validates :language, inclusion: { in: LANGUAGES.keys }, allow_nil: true
-  validates :header_text, presence: true, length: { maximum: 60 }, if: -> { header_type == "text" }
-  validates :header_media_url, presence: true, if: -> { header_type.in?(%w[image video document]) }
+  validates :template_type, inclusion: { in: TEMPLATE_TYPES }, allow_nil: true
+  validates :header_text, presence: true, length: { maximum: 60 }, if: -> { standard? && header_type == "text" }
+  validates :header_media_url, presence: true, if: -> { standard? && header_type.in?(%w[image video document]) }
   validates :body, length: { maximum: 1024 }
   validates :footer, length: { maximum: 60 }
+  validate :validate_carousel_cards, if: :carousel?
 
   scope :ordered, -> { order(created_at: :desc) }
 
@@ -72,6 +76,47 @@ class WhatsappTemplate < ApplicationRecord
     when "video" then "Video"
     when "document" then "Document"
     else header_type&.titleize
+    end
+  end
+
+  def standard?
+    template_type.blank? || template_type == "standard"
+  end
+
+  def carousel?
+    template_type == "carousel"
+  end
+
+  def parsed_carousel_cards
+    return [] if carousel_cards.blank?
+    JSON.parse(carousel_cards) rescue []
+  end
+
+  def parsed_carousel_cards=(cards)
+    self.carousel_cards = cards.to_json
+  end
+
+  def template_type_display
+    carousel? ? "Carousel" : "Standard"
+  end
+
+  private
+
+  def validate_carousel_cards
+    cards = parsed_carousel_cards
+    if cards.length < 2
+      errors.add(:carousel_cards, "must have at least 2 cards")
+    elsif cards.length > 10
+      errors.add(:carousel_cards, "can have at most 10 cards")
+    end
+
+    cards.each_with_index do |card, i|
+      if card["body"].blank?
+        errors.add(:base, "Card #{i + 1} body is required")
+      end
+      if card["image_url"].blank?
+        errors.add(:base, "Card #{i + 1} image URL is required")
+      end
     end
   end
 end

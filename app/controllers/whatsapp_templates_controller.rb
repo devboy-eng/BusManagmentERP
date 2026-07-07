@@ -96,6 +96,15 @@ class WhatsappTemplatesController < ApplicationController
   end
 
   def template_params
-    params.require(:whatsapp_template).permit(:name, :body, :category, :language, :header_type, :header_text, :header_media_url, :footer)
+    permitted = params.require(:whatsapp_template).permit(:name, :body, :category, :language, :header_type, :header_text, :header_media_url, :footer, :template_type, :carousel_cards)
+    # Parse carousel_cards from form JSON string
+    if permitted[:carousel_cards].present? && permitted[:carousel_cards].is_a?(String)
+      begin
+        JSON.parse(permitted[:carousel_cards])
+      rescue JSON::ParserError
+        permitted[:carousel_cards] = "[]"
+      end
+    end
+    permitted
   end
 end

@@ -1,12 +1,18 @@
 class WhatsappSettingsController < ApplicationController
   def edit
     @setting = WhatsappSetting.instance
+    load_phone_numbers
   end
 
   def update
     @setting = WhatsappSetting.instance
     if @setting.update(setting_params)
-      redirect_to edit_whatsapp_setting_path, notice: "WhatsApp settings saved successfully."
+      load_phone_numbers
+      if @phone_numbers&.any?
+        redirect_to edit_whatsapp_setting_path, notice: "Settings saved. Please select your phone number below."
+      else
+        redirect_to edit_whatsapp_setting_path, notice: "WhatsApp settings saved successfully."
+      end
     else
       render :edit, status: :unprocessable_entity
     end
@@ -35,6 +41,18 @@ class WhatsappSettingsController < ApplicationController
   end
 
   private
+
+  def load_phone_numbers
+    return unless @setting.access_token.present? && @setting.business_account_id.present?
+
+    result = WhatsappService.fetch_phone_numbers(
+      access_token: @setting.access_token,
+      business_account_id: @setting.business_account_id
+    )
+    @phone_numbers = result[:phone_numbers] if result[:success]
+  rescue => e
+    Rails.logger.warn("Failed to fetch phone numbers: #{e.message}")
+  end
 
   def setting_params
     params.require(:whatsapp_setting).permit(:phone_number_id, :access_token, :business_account_id, :active, :webhook_url, :verify_token, :app_secret, :app_id)
