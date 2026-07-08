@@ -38,13 +38,21 @@ class WhatsappService
   end
 
   def send_and_log(recipient:, message:, user:)
+    conversation = WhatsappConversation.find_or_start(
+      phone: recipient.phone,
+      name: recipient.name,
+      contact: recipient
+    )
+
     msg_record = WhatsappMessage.create!(
       recipient: recipient,
       recipient_name: recipient.name,
       recipient_phone: recipient.phone,
       message_body: message,
       user: user,
-      status: :queued
+      status: :queued,
+      direction: "outgoing",
+      whatsapp_conversation: conversation
     )
 
     result = send_text_message(phone: recipient.phone, text: message)
@@ -54,6 +62,8 @@ class WhatsappService
     else
       msg_record.update!(status: :failed, error_message: result[:error])
     end
+
+    conversation.update_last_message!(msg_record)
 
     { record: msg_record, result: result }
   end

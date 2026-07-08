@@ -39,6 +39,13 @@ Rails.application.routes.draw do
   end
   resources :roles
 
+  resources :whatsapp_chats, only: [:index, :show] do
+    member do
+      post :send_reply
+      patch :mark_read
+    end
+  end
+
   resources :whatsapp_marketing, only: [:index] do
     collection do
       get :compose

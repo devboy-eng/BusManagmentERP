@@ -1,0 +1,40 @@
+<!-- Chat Header -->
+<div class="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0">
+  <div class="h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold text-white <%= conversation.contact_type == 'Customer' ? 'bg-emerald-500' : 'bg-blue-500' %>">
+    <%= conversation.display_name.first&.upcase || "?" %>
+  </div>
+  <div class="flex-1 min-w-0">
+    <p class="text-sm font-semibold text-gray-900 truncate"><%= conversation.display_name %></p>
+    <p class="text-[11px] text-gray-500">
+      <%= conversation.contact_phone %>
+      <% if conversation.contact %>
+        &middot;
+        <% if conversation.contact_type == "Customer" %>
+          <%= link_to "View Customer", customer_path(conversation.contact), class: "text-indigo-600 hover:underline" %>
+        <% else %>
+          <%= link_to "View Lead", lead_path(conversation.contact), class: "text-indigo-600 hover:underline" %>
+        <% end %>
+      <% end %>
+    </p>
+  </div>
+</div>
+
+<!-- Messages Container -->
+<div class="flex-1 overflow-y-auto px-4 py-4 space-y-1" id="messages-container"
+     data-whatsapp-chat-target="messages"
+     data-conversation-id="<%= conversation.id %>">
+  <% messages.each do |message| %>
+    <%= render partial: "whatsapp_chats/message", locals: { message: message } %>
+  <% end %>
+
+  <% if messages.empty? %>
+    <div class="flex items-center justify-center h-full">
+      <p class="text-xs text-gray-400">No messages yet. Send the first message below.</p>
+    </div>
+  <% end %>
+</div>
+
+<!-- Message Form -->
+<div id="message-form" class="flex-shrink-0">
+  <%= render partial: "whatsapp_chats/message_form", locals: { conversation: conversation } %>
+</div>

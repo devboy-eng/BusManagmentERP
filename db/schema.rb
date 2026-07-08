@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_08_000008) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_08_100003) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -116,6 +116,21 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_08_000008) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "whatsapp_conversations", force: :cascade do |t|
+    t.string "contact_phone", null: false
+    t.string "contact_name"
+    t.string "contact_type"
+    t.integer "contact_id"
+    t.text "last_message_body"
+    t.datetime "last_message_at"
+    t.integer "unread_count", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contact_phone"], name: "index_whatsapp_conversations_on_contact_phone", unique: true
+    t.index ["contact_type", "contact_id"], name: "index_whatsapp_conversations_on_contact_type_and_contact_id"
+    t.index ["last_message_at"], name: "index_whatsapp_conversations_on_last_message_at"
+  end
+
   create_table "whatsapp_messages", force: :cascade do |t|
     t.string "recipient_type"
     t.integer "recipient_id"
@@ -128,8 +143,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_08_000008) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "direction", default: "outgoing"
+    t.integer "whatsapp_conversation_id"
     t.index ["recipient_type", "recipient_id"], name: "index_whatsapp_messages_on_recipient_type_and_recipient_id"
     t.index ["user_id"], name: "index_whatsapp_messages_on_user_id"
+    t.index ["whatsapp_conversation_id", "created_at"], name: "idx_on_whatsapp_conversation_id_created_at_858d582181"
+    t.index ["whatsapp_conversation_id"], name: "index_whatsapp_messages_on_whatsapp_conversation_id"
   end
 
   create_table "whatsapp_settings", force: :cascade do |t|
@@ -169,5 +188,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_08_000008) do
   add_foreign_key "follow_ups", "leads"
   add_foreign_key "follow_ups", "users"
   add_foreign_key "whatsapp_messages", "users"
+  add_foreign_key "whatsapp_messages", "whatsapp_conversations"
   add_foreign_key "whatsapp_templates", "users"
 end

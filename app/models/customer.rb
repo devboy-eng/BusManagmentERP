@@ -2,6 +2,7 @@ class Customer < ApplicationRecord
   belongs_to :user, optional: true
   has_many :comments, as: :commentable, dependent: :destroy
   has_many :whatsapp_messages, as: :recipient, dependent: :nullify
+  has_many :whatsapp_conversations, as: :contact, dependent: :nullify
 
   enum :status, { active: 0, non_active: 1 }, default: :active
 

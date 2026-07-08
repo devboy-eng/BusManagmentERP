@@ -1,0 +1,29 @@
+<% content_for :page_title, "WhatsApp Chat" %>
+
+<div class="-m-6 flex h-[calc(100vh-3.5rem)]" data-controller="whatsapp-chat">
+  <!-- Conversation List (Left Panel) -->
+  <div class="w-80 border-r border-gray-200 bg-white flex flex-col flex-shrink-0">
+    <!-- Search -->
+    <div class="p-3 border-b border-gray-200">
+      <input type="text"
+             placeholder="Search conversations..."
+             class="w-full rounded-lg border border-gray-300 px-3 py-2 text-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+             data-whatsapp-chat-target="search"
+             data-action="input->whatsapp-chat#filterConversations">
+    </div>
+
+    <!-- Conversations -->
+    <div id="conversation-list" class="flex-1 overflow-y-auto" data-whatsapp-chat-target="conversationList">
+      <%= render partial: "whatsapp_chats/conversation_list", locals: { conversations: @conversations, selected: @selected } %>
+    </div>
+  </div>
+
+  <!-- Chat Area (Right Panel) -->
+  <div class="flex-1 flex flex-col bg-gray-50" id="chat-area">
+    <% if @selected %>
+      <%= render partial: "whatsapp_chats/chat_area", locals: { conversation: @selected, messages: @messages } %>
+    <% else %>
+      <%= render partial: "whatsapp_chats/empty_state" %>
+    <% end %>
+  </div>
+</div>

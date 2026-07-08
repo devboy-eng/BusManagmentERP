@@ -2,6 +2,7 @@ class Lead < ApplicationRecord
   belongs_to :user, optional: true
   has_many :comments, as: :commentable, dependent: :destroy
   has_many :whatsapp_messages, as: :recipient, dependent: :nullify
+  has_many :whatsapp_conversations, as: :contact, dependent: :nullify
   has_many :follow_ups, dependent: :destroy
 
   enum :status, { pending: 0, not_interested: 1, work_in_process: 2, contacted: 3, follow_up: 4 }, default: :pending

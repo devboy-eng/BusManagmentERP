@@ -1,0 +1,26 @@
+<div class="flex <%= message.incoming? ? 'justify-start' : 'justify-end' %>" id="message-<%= message.id %>" data-message-id="<%= message.id %>">
+  <div class="max-w-[70%] rounded-lg px-3 py-2 shadow-sm <%= message.incoming? ? 'bg-white text-gray-900' : 'bg-green-500 text-white' %>">
+    <p class="text-xs whitespace-pre-wrap break-words"><%= message.message_body %></p>
+    <div class="flex items-center justify-end gap-1 mt-1">
+      <span class="text-[10px] <%= message.incoming? ? 'text-gray-400' : 'text-green-100' %>">
+        <%= message.created_at.strftime("%I:%M %p") %>
+      </span>
+      <% if message.outgoing? %>
+        <span class="text-[10px] <%= message.incoming? ? 'text-gray-400' : 'text-green-100' %>">
+          <% case message.status %>
+          <% when "queued" %>
+            &#128340;
+          <% when "sent" %>
+            &#10003;
+          <% when "delivered" %>
+            &#10003;&#10003;
+          <% when "read" %>
+            <span class="text-blue-200">&#10003;&#10003;</span>
+          <% when "failed" %>
+            <span class="text-red-200" title="<%= message.error_message %>">&#10007;</span>
+          <% end %>
+        </span>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,9 @@
+<% conversations.each do |conversation| %>
+  <%= render partial: "whatsapp_chats/conversation", locals: { conversation: conversation, selected: (defined?(selected) && selected&.id == conversation.id) } %>
+<% end %>
+
+<% if conversations.empty? %>
+  <div class="p-6 text-center text-xs text-gray-400">
+    No conversations yet. Messages sent from WhatsApp Marketing will appear here.
+  </div>
+<% end %>
