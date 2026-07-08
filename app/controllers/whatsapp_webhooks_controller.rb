@@ -15,6 +15,8 @@ class WhatsappWebhooksController < ActionController::Base
     end
   end
 
+  # Meta requires 200 OK on EVERY webhook call — non-200 responses
+  # cause retries and eventually webhook deactivation + quality drops.
   def receive
     payload = request.body.read
     setting = WhatsappSetting.first
@@ -23,7 +25,8 @@ class WhatsappWebhooksController < ActionController::Base
     if setting&.app_secret.present?
       signature = request.headers["X-Hub-Signature-256"]
       unless valid_signature?(payload, signature, setting.app_secret)
-        head :unauthorized
+        Rails.logger.warn "[WhatsApp Webhook] Invalid signature — ignoring payload"
+        head :ok
         return
       end
     end
@@ -36,7 +39,7 @@ class WhatsappWebhooksController < ActionController::Base
     process_incoming_messages(data)
 
     head :ok
-  rescue => e
+  rescue Exception => e
     Rails.logger.error "[WhatsApp Webhook] Unhandled error: #{e.class}: #{e.message}"
     head :ok
   end
@@ -62,6 +65,8 @@ class WhatsappWebhooksController < ActionController::Base
         end
       end
     end
+  rescue Exception => e
+    Rails.logger.error "[WhatsApp Webhook] Error processing statuses: #{e.class}: #{e.message}"
   end
 
   def update_message_status(status)
@@ -90,7 +95,6 @@ class WhatsappWebhooksController < ActionController::Base
       message.update(status: mapped)
     end
 
-    # Broadcast status update to chat UI
     broadcast_message_status_update(message)
   end
 
@@ -111,8 +115,8 @@ class WhatsappWebhooksController < ActionController::Base
         end
       end
     end
-  rescue => e
-    Rails.logger.error "[WhatsApp Webhook] Error processing incoming messages: #{e.message}\n#{e.backtrace&.first(5)&.join("\n")}"
+  rescue Exception => e
+    Rails.logger.error "[WhatsApp Webhook] Error processing incoming messages: #{e.class}: #{e.message}\n#{e.backtrace&.first(5)&.join("\n")}"
   end
 
   def process_single_incoming_message(msg, contacts)
@@ -123,7 +127,7 @@ class WhatsappWebhooksController < ActionController::Base
     whatsapp_id = msg["id"]
     return if whatsapp_id.blank?
 
-    # Deduplicate
+    # Deduplicate — Meta may send the same message multiple times
     if WhatsappMessage.exists?(whatsapp_message_id: whatsapp_id)
       Rails.logger.info "[WhatsApp Webhook] Duplicate message #{whatsapp_id}, skipping"
       return
@@ -165,16 +169,14 @@ class WhatsappWebhooksController < ActionController::Base
     conversation.update_last_message!(message)
     conversation.increment_unread!
 
-    # Broadcast new message to conversation channel
+    # Broadcast to chat UI
     broadcast_new_message(conversation, message)
-
-    # Broadcast conversation list update
     broadcast_conversation_update(conversation)
 
-    # Send read receipt back to WhatsApp
+    # Send read receipt so sender sees blue ticks
     send_read_receipt(whatsapp_id)
   rescue => e
-    Rails.logger.error "[WhatsApp Webhook] Error processing message #{msg["id"]}: #{e.message}\n#{e.backtrace&.first(5)&.join("\n")}"
+    Rails.logger.error "[WhatsApp Webhook] Error processing message #{msg["id"]}: #{e.class}: #{e.message}\n#{e.backtrace&.first(5)&.join("\n")}"
   end
 
   def broadcast_new_message(conversation, message)
@@ -238,6 +240,6 @@ class WhatsappWebhooksController < ActionController::Base
       }.to_json
     )
   rescue => e
-    Rails.logger.error("Failed to send read receipt: #{e.message}")
+    Rails.logger.error "[WhatsApp Webhook] Failed to send read receipt: #{e.message}"
   end
 end

@@ -58,6 +58,14 @@ class WhatsappConversation < ApplicationRecord
     last_message_body.truncate(50)
   end
 
+  # Meta allows free-form replies only within 24 hours of the customer's last message.
+  # Outside this window, only approved template messages can be sent.
+  def within_reply_window?
+    last_incoming = whatsapp_messages.incoming.order(created_at: :desc).first
+    return false unless last_incoming
+    last_incoming.created_at > 24.hours.ago
+  end
+
   private
 
   def self.find_contact_by_phone(phone)

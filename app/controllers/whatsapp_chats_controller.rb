@@ -39,6 +39,17 @@ class WhatsappChatsController < ApplicationController
       return
     end
 
+    # WhatsApp max message length is 4096 characters
+    if body.length > 4096
+      return render_form_error("Message too long. WhatsApp allows maximum 4096 characters.")
+    end
+
+    # Meta 24-hour policy: free-form messages only allowed within 24h of customer's last message.
+    # Outside this window Meta will reject the API call and flag the number.
+    unless @conversation.within_reply_window?
+      return render_form_error("Cannot send — the 24-hour customer service window has expired. The customer must message you first before you can reply.")
+    end
+
     begin
       service = WhatsappService.new
 
@@ -79,14 +90,7 @@ class WhatsappChatsController < ApplicationController
         end
       end
     rescue WhatsappService::ApiError => e
-      respond_to do |format|
-        format.turbo_stream do
-          render turbo_stream: turbo_stream.replace("message-form",
-            partial: "whatsapp_chats/message_form",
-            locals: { conversation: @conversation, error: e.message }
-          )
-        end
-      end
+      render_form_error(e.message)
     end
   end
 
@@ -103,6 +107,17 @@ class WhatsappChatsController < ApplicationController
 
   def load_conversation
     @conversation = WhatsappConversation.find(params[:id])
+  end
+
+  def render_form_error(error_msg)
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace("message-form",
+          partial: "whatsapp_chats/message_form",
+          locals: { conversation: @conversation, error: error_msg }
+        )
+      end
+    end
   end
 
   def broadcast_new_message(conversation, message)
