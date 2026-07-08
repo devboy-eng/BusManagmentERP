@@ -36,6 +36,9 @@ class WhatsappWebhooksController < ActionController::Base
     process_incoming_messages(data)
 
     head :ok
+  rescue => e
+    Rails.logger.error "[WhatsApp Webhook] Unhandled error: #{e.class}: #{e.message}"
+    head :ok
   end
 
   private
@@ -184,7 +187,7 @@ class WhatsappWebhooksController < ActionController::Base
       conversation,
       { type: "new_message", html: html }
     )
-  rescue => e
+  rescue Exception => e
     Rails.logger.error "[WhatsApp Webhook] Broadcast new_message failed: #{e.message}"
   end
 
@@ -198,7 +201,7 @@ class WhatsappWebhooksController < ActionController::Base
       "whatsapp_conversations",
       { type: "conversation_update", conversation_id: conversation.id, html: html }
     )
-  rescue => e
+  rescue Exception => e
     Rails.logger.error "[WhatsApp Webhook] Broadcast conversation_update failed: #{e.message}"
   end
 
@@ -214,7 +217,7 @@ class WhatsappWebhooksController < ActionController::Base
       message.whatsapp_conversation,
       { type: "message_status", message_id: message.id, html: html }
     )
-  rescue => e
+  rescue Exception => e
     Rails.logger.error "[WhatsApp Webhook] Broadcast message_status failed: #{e.message}"
   end
 
