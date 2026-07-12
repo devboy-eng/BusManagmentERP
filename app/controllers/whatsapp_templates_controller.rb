@@ -79,30 +79,86 @@ class WhatsappTemplatesController < ApplicationController
       return
     end
 
-    templates = WhatsappTemplate.where.not(meta_template_id: [nil, ""])
-    if templates.empty?
-      redirect_to whatsapp_templates_path, alert: "No templates synced to Meta yet."
+    service = WhatsappService.new
+    result = service.fetch_all_templates_from_meta
+
+    unless result[:success]
+      redirect_to whatsapp_templates_path, alert: "Failed to fetch from Meta: #{result[:error]}"
       return
     end
 
-    service = WhatsappService.new
-    synced = 0
-    failed = 0
+    imported = 0
+    updated = 0
 
-    templates.find_each do |template|
-      result = service.sync_status_from_meta(template)
-      if result[:success]
-        synced += 1
+    result[:templates].each do |meta_tpl|
+      meta_id = meta_tpl["id"]
+      name = meta_tpl["name"]
+      status = meta_tpl["status"]&.downcase
+      language = meta_tpl["language"]
+      category = meta_tpl["category"]&.downcase
+      components = meta_tpl["components"] || []
+
+      # Extract header, body, footer from components
+      header_type = "none"
+      header_text = nil
+      header_media_url = nil
+      body_text = nil
+      footer_text = nil
+
+      components.each do |comp|
+        case comp["type"]
+        when "HEADER"
+          format = comp["format"]&.downcase
+          header_type = format || "text"
+          header_text = comp["text"] if format == "TEXT"
+          if %w[IMAGE VIDEO DOCUMENT].include?(comp["format"])
+            header_media_url = comp.dig("example", "header_handle", 0)
+          end
+        when "BODY"
+          body_text = comp["text"]
+        when "FOOTER"
+          footer_text = comp["text"]
+        end
+      end
+
+      # Find existing template by meta_template_id or create new
+      template = WhatsappTemplate.find_by(meta_template_id: meta_id)
+
+      if template
+        template.update!(
+          status: status,
+          language: language,
+          category: category,
+          body: body_text || template.body,
+          header_type: header_type,
+          header_text: header_text,
+          footer: footer_text
+        )
+        updated += 1
       else
-        failed += 1
+        WhatsappTemplate.create!(
+          name: name,
+          meta_template_id: meta_id,
+          status: status,
+          language: language,
+          category: category,
+          body: body_text || "",
+          header_type: header_type,
+          header_text: header_text,
+          header_media_url: header_media_url,
+          footer: footer_text,
+          user: current_user
+        )
+        imported += 1
       end
     end
 
-    if failed > 0
-      redirect_to whatsapp_templates_path, notice: "Synced #{synced} template(s). #{failed} failed to sync."
-    else
-      redirect_to whatsapp_templates_path, notice: "All #{synced} template(s) synced from Meta successfully."
-    end
+    parts = []
+    parts << "#{imported} template(s) imported" if imported > 0
+    parts << "#{updated} template(s) updated" if updated > 0
+    parts << "No templates found on Meta" if imported == 0 && updated == 0
+
+    redirect_to whatsapp_templates_path, notice: parts.join(", ") + "."
   rescue => e
     redirect_to whatsapp_templates_path, alert: "Error: #{e.message}"
   end

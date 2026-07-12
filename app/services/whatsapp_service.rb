@@ -269,6 +269,22 @@ class WhatsappService
     end
   end
 
+  def fetch_all_templates_from_meta
+    response = HTTParty.get(
+      "#{BASE_URL}/#{@setting.business_account_id}/message_templates",
+      headers: { "Authorization" => "Bearer #{@access_token}" },
+      query: { fields: "id,name,status,language,category,components", limit: 100 }
+    )
+
+    unless response.success?
+      error = response.parsed_response.dig("error", "message") || "Failed to fetch templates"
+      return { success: false, error: error }
+    end
+
+    templates_data = response.parsed_response["data"] || []
+    { success: true, templates: templates_data }
+  end
+
   def self.fetch_phone_numbers(access_token:, business_account_id:)
     response = HTTParty.get(
       "#{BASE_URL}/#{business_account_id}/phone_numbers",
