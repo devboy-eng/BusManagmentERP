@@ -44,12 +44,6 @@ class WhatsappChatsController < ApplicationController
       return render_form_error("Message too long. WhatsApp allows maximum 4096 characters.")
     end
 
-    # Meta 24-hour policy: free-form messages only allowed within 24h of customer's last message.
-    # Outside this window Meta will reject the API call and flag the number.
-    unless @conversation.within_reply_window?
-      return render_form_error("Cannot send — the 24-hour customer service window has expired. The customer must message you first before you can reply.")
-    end
-
     begin
       service = WhatsappService.new
 
