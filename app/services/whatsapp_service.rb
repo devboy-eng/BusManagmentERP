@@ -424,6 +424,28 @@ class WhatsappService
     # Footer component (text only, max 60 chars, no variables)
     components << { type: "FOOTER", text: template.footer } if template.footer.present?
 
+    # Buttons component
+    btns = template.parsed_buttons
+    if btns.any?
+      meta_buttons = btns.map do |btn|
+        case btn["type"]
+        when "QUICK_REPLY"
+          { type: "QUICK_REPLY", text: btn["text"] }
+        when "URL"
+          b = { type: "URL", text: btn["text"], url: btn["url"] }
+          if btn["url"]&.match?(/\{\{\d+\}\}/)
+            b[:example] = [btn["url"].gsub(/\{\{\d+\}\}/, "https://example.com/sample")]
+          end
+          b
+        when "PHONE_NUMBER"
+          { type: "PHONE_NUMBER", text: btn["text"], phone_number: btn["phone_number"] }
+        when "COPY_CODE"
+          { type: "COPY_CODE", text: btn["text"] }
+        end
+      end.compact
+      components << { type: "BUTTONS", buttons: meta_buttons }
+    end
+
     components
   end
 
@@ -463,8 +485,26 @@ class WhatsappService
       end
       card_components << card_body
 
-      # Optional button
-      if card["button_text"].present?
+      # Buttons — support new multi-button format or legacy single button
+      card_buttons = card["buttons"]
+      if card_buttons.is_a?(Array) && card_buttons.any?
+        meta_btns = card_buttons.map do |btn|
+          case btn["type"]
+          when "QUICK_REPLY"
+            { type: "QUICK_REPLY", text: btn["text"] }
+          when "URL"
+            b = { type: "URL", text: btn["text"], url: btn["url"] }
+            if btn["url"]&.match?(/\{\{\d+\}\}/)
+              b[:example] = [btn["url"].gsub(/\{\{\d+\}\}/, "https://example.com/sample")]
+            end
+            b
+          when "PHONE_NUMBER"
+            { type: "PHONE_NUMBER", text: btn["text"], phone_number: btn["phone_number"] }
+          end
+        end.compact
+        card_components << { type: "BUTTONS", buttons: meta_btns } if meta_btns.any?
+      elsif card["button_text"].present?
+        # Legacy single button format
         buttons = []
         if card["button_url"].present?
           buttons << { type: "URL", text: card["button_text"], url: card["button_url"] }

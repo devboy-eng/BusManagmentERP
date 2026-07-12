@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_08_100003) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_12_000001) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -180,6 +180,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_08_100003) do
     t.string "meta_template_id"
     t.string "template_type", default: "standard"
     t.text "carousel_cards"
+    t.text "buttons"
     t.index ["user_id"], name: "index_whatsapp_templates_on_user_id"
   end
 

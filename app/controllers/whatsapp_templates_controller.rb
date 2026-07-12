@@ -104,6 +104,7 @@ class WhatsappTemplatesController < ApplicationController
       header_media_url = nil
       body_text = nil
       footer_text = nil
+      buttons_json = nil
 
       components.each do |comp|
         case comp["type"]
@@ -118,6 +119,14 @@ class WhatsappTemplatesController < ApplicationController
           body_text = comp["text"]
         when "FOOTER"
           footer_text = comp["text"]
+        when "BUTTONS"
+          raw_buttons = comp["buttons"] || []
+          buttons_json = raw_buttons.map { |b|
+            btn = { "type" => b["type"], "text" => b["text"] }
+            btn["url"] = b["url"] if b["url"].present?
+            btn["phone_number"] = b["phone_number"] if b["phone_number"].present?
+            btn
+          }.to_json
         end
       end
 
@@ -139,7 +148,8 @@ class WhatsappTemplatesController < ApplicationController
           body: body_text.presence || template.body,
           header_type: header_type,
           header_text: header_text,
-          footer: footer_text
+          footer: footer_text,
+          buttons: buttons_json
         )
         updated += 1
       else
@@ -154,6 +164,7 @@ class WhatsappTemplatesController < ApplicationController
           header_text: header_text,
           header_media_url: header_media_url,
           footer: footer_text,
+          buttons: buttons_json,
           user: current_user
         )
         imported += 1
@@ -193,13 +204,21 @@ class WhatsappTemplatesController < ApplicationController
   end
 
   def template_params
-    permitted = params.require(:whatsapp_template).permit(:name, :body, :category, :language, :header_type, :header_text, :header_media_url, :footer, :template_type, :carousel_cards)
+    permitted = params.require(:whatsapp_template).permit(:name, :body, :category, :language, :header_type, :header_text, :header_media_url, :footer, :template_type, :carousel_cards, :buttons)
     # Parse carousel_cards from form JSON string
     if permitted[:carousel_cards].present? && permitted[:carousel_cards].is_a?(String)
       begin
         JSON.parse(permitted[:carousel_cards])
       rescue JSON::ParserError
         permitted[:carousel_cards] = "[]"
+      end
+    end
+    # Parse buttons from form JSON string
+    if permitted[:buttons].present? && permitted[:buttons].is_a?(String)
+      begin
+        JSON.parse(permitted[:buttons])
+      rescue JSON::ParserError
+        permitted[:buttons] = "[]"
       end
     end
     permitted

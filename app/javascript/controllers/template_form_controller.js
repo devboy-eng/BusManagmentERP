@@ -22,13 +22,19 @@ export default class extends Controller {
     "headerTextInput",
     "headerMediaInput",
     "cardsContainer",
-    "carouselCardsInput"
+    "carouselCardsInput",
+    "buttonsContainer",
+    "buttonsInput",
+    "buttonMixWarning",
+    "buttonsSection",
+    "previewButtons"
   ]
 
   connect() {
     this.updatePreview()
     this.headerTypeChanged()
     this.syncTemplateTypeUI()
+    this.checkButtonMixing()
   }
 
   syncTemplateTypeUI() {
@@ -57,6 +63,9 @@ export default class extends Controller {
     if (this.hasPreviewStandardBubbleTarget) {
       this.previewStandardBubbleTarget.classList.toggle("hidden", type === "carousel")
     }
+    if (this.hasButtonsSectionTarget) {
+      this.buttonsSectionTarget.classList.toggle("hidden", type === "carousel")
+    }
   }
 
   headerTypeChanged() {
@@ -71,6 +80,102 @@ export default class extends Controller {
     }
 
     this.updatePreview()
+  }
+
+  // --- Button management (standard templates) ---
+
+  addButton(event) {
+    try {
+      const type = event.currentTarget.dataset.buttonType
+      if (!type) return
+
+      const container = this.buttonsContainerTarget
+      const existingButtons = container.querySelectorAll(".button-row")
+      const count = existingButtons.length
+
+      // Enforce limits
+      const types = Array.from(existingButtons).map(r => r.dataset.buttonType)
+      const hasQR = types.includes("QUICK_REPLY")
+      const hasCTA = types.some(t => ["URL", "PHONE_NUMBER", "COPY_CODE"].includes(t))
+      const ctaTypes = ["URL", "PHONE_NUMBER", "COPY_CODE"]
+
+      // No mixing
+      if (type === "QUICK_REPLY" && hasCTA) { this.checkButtonMixing(); return }
+      if (ctaTypes.includes(type) && hasQR) { this.checkButtonMixing(); return }
+
+      // Max 10 QR, max 2 CTA
+      if (type === "QUICK_REPLY" && types.filter(t => t === "QUICK_REPLY").length >= 10) return
+      if (ctaTypes.includes(type) && types.filter(t => ctaTypes.includes(t)).length >= 2) return
+
+      const typeLabel = type.replace(/_/g, " ")
+      let extraFields = ""
+      if (type === "URL") {
+        extraFields = `<input type="text" class="btn-url w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-[11px] text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="https://example.com/{{1}}" data-action="input->template-form#updateButtonsData">`
+      } else if (type === "PHONE_NUMBER") {
+        extraFields = `<input type="text" class="btn-phone w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-[11px] text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="+919876543210" data-action="input->template-form#updateButtonsData">`
+      }
+
+      const rowHtml = `
+        <div class="button-row rounded-lg border border-gray-200 bg-gray-50 p-2.5 space-y-1.5" data-button-type="${type}">
+          <div class="flex items-center justify-between">
+            <span class="inline-flex items-center rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-medium text-gray-600 whitespace-nowrap">${this.escapeHtml(typeLabel)}</span>
+            <button type="button" data-action="template-form#removeButton" class="text-red-400 hover:text-red-600 transition">
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+          <input type="text" class="btn-text w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-[11px] text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="Button text (max 25)" maxlength="25" data-action="input->template-form#updateButtonsData">
+          ${extraFields}
+        </div>
+      `
+
+      container.insertAdjacentHTML("beforeend", rowHtml)
+      this.updateButtonsData()
+      this.checkButtonMixing()
+      this.renderButtonsPreview()
+    } catch(e) {
+      console.error("addButton error:", e)
+    }
+  }
+
+  removeButton(event) {
+    const row = event.currentTarget.closest(".button-row")
+    row.remove()
+    this.updateButtonsData()
+    this.checkButtonMixing()
+  }
+
+  updateButtonsData() {
+    if (!this.hasButtonsInputTarget) return
+
+    const rows = this.buttonsContainerTarget.querySelectorAll(".button-row")
+    const buttons = Array.from(rows).map(row => {
+      const type = row.dataset.buttonType
+      const btn = {
+        type: type,
+        text: row.querySelector(".btn-text")?.value || ""
+      }
+      if (type === "URL") {
+        btn.url = row.querySelector(".btn-url")?.value || ""
+      }
+      if (type === "PHONE_NUMBER") {
+        btn.phone_number = row.querySelector(".btn-phone")?.value || ""
+      }
+      return btn
+    })
+
+    this.buttonsInputTarget.value = JSON.stringify(buttons)
+    this.updatePreview()
+  }
+
+  checkButtonMixing() {
+    if (!this.hasButtonMixWarningTarget || !this.hasButtonsContainerTarget) return
+
+    const rows = this.buttonsContainerTarget.querySelectorAll(".button-row")
+    const types = Array.from(rows).map(r => r.dataset.buttonType)
+    const hasQR = types.includes("QUICK_REPLY")
+    const hasCTA = types.some(t => ["URL", "PHONE_NUMBER", "COPY_CODE"].includes(t))
+
+    this.buttonMixWarningTarget.classList.toggle("hidden", !(hasQR && hasCTA))
   }
 
   // --- Carousel card management ---
@@ -105,13 +210,17 @@ export default class extends Controller {
           <label class="block text-[11px] font-medium text-gray-600 mb-1">Card Body</label>
           <textarea class="card-body w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" rows="2" placeholder="Card description text" data-action="input->template-form#updateCarouselData"></textarea>
         </div>
-        <div>
-          <label class="block text-[11px] font-medium text-gray-600 mb-1">Button Text <span class="text-gray-400 font-normal">(Optional)</span></label>
-          <input type="text" class="card-button-text w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. View Details" data-action="input->template-form#updateCarouselData">
-        </div>
-        <div>
-          <label class="block text-[11px] font-medium text-gray-600 mb-1">Button URL <span class="text-gray-400 font-normal">(Optional)</span></label>
-          <input type="text" class="card-button-url w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="https://example.com/page" data-action="input->template-form#updateCarouselData">
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-[11px] font-medium text-gray-600">Buttons <span class="text-gray-400 font-normal">(max 2)</span></label>
+            <select class="card-add-button rounded border border-gray-300 bg-white px-2 py-1 text-[10px] text-gray-600 focus:border-indigo-500 focus:outline-none" data-action="change->template-form#addCardButton">
+              <option value="">+ Add button</option>
+              <option value="QUICK_REPLY">Quick Reply</option>
+              <option value="URL">URL</option>
+              <option value="PHONE_NUMBER">Phone Number</option>
+            </select>
+          </div>
+          <div class="card-buttons-container space-y-1.5"></div>
         </div>
       </div>
     `
@@ -120,6 +229,48 @@ export default class extends Controller {
     this.updateCarouselData()
     this.renumberCards()
     this.updatePreview()
+  }
+
+  addCardButton(event) {
+    const select = event.currentTarget
+    const type = select.value
+    if (!type) return
+
+    select.value = ""
+
+    const card = select.closest(".carousel-card")
+    const btnContainer = card.querySelector(".card-buttons-container")
+    const existing = btnContainer.querySelectorAll(".card-button-row").length
+    if (existing >= 2) return
+
+    const typeLabels = { "URL": "URL", "QUICK_REPLY": "QR", "PHONE_NUMBER": "Phone" }
+    const typeLabel = typeLabels[type] || type
+    let extraField = ""
+    if (type === "URL") {
+      extraField = `<input type="text" class="card-btn-url flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-[11px] text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none" placeholder="https://..." data-action="input->template-form#updateCarouselData">`
+    } else if (type === "PHONE_NUMBER") {
+      extraField = `<input type="text" class="card-btn-phone flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-[11px] text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none" placeholder="+919876543210" data-action="input->template-form#updateCarouselData">`
+    }
+
+    const rowHtml = `
+      <div class="card-button-row flex items-center gap-1.5" data-button-type="${type}">
+        <span class="text-[9px] font-medium text-gray-500 w-8 shrink-0">${typeLabel}</span>
+        <input type="text" class="card-btn-text flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-[11px] text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none" placeholder="Button text" maxlength="25" data-action="input->template-form#updateCarouselData">
+        ${extraField}
+        <button type="button" data-action="template-form#removeCardButton" class="text-red-400 hover:text-red-600">
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+    `
+
+    btnContainer.insertAdjacentHTML("beforeend", rowHtml)
+    this.updateCarouselData()
+  }
+
+  removeCardButton(event) {
+    const row = event.currentTarget.closest(".card-button-row")
+    row.remove()
+    this.updateCarouselData()
   }
 
   removeCard(event) {
@@ -143,12 +294,32 @@ export default class extends Controller {
     if (!this.hasCarouselCardsInputTarget) return
 
     const cards = this.cardsContainerTarget.querySelectorAll(".carousel-card")
-    const data = Array.from(cards).map(card => ({
-      image_url: card.querySelector(".card-image-url")?.value || "",
-      body: card.querySelector(".card-body")?.value || "",
-      button_text: card.querySelector(".card-button-text")?.value || "",
-      button_url: card.querySelector(".card-button-url")?.value || ""
-    }))
+    const data = Array.from(cards).map(card => {
+      const cardData = {
+        image_url: card.querySelector(".card-image-url")?.value || "",
+        body: card.querySelector(".card-body")?.value || ""
+      }
+
+      // Read buttons from card-button-rows
+      const btnRows = card.querySelectorAll(".card-button-row")
+      if (btnRows.length > 0) {
+        cardData.buttons = Array.from(btnRows).map(row => {
+          const btn = {
+            type: row.dataset.buttonType,
+            text: row.querySelector(".card-btn-text")?.value || ""
+          }
+          if (row.dataset.buttonType === "URL") {
+            btn.url = row.querySelector(".card-btn-url")?.value || ""
+          }
+          if (row.dataset.buttonType === "PHONE_NUMBER") {
+            btn.phone_number = row.querySelector(".card-btn-phone")?.value || ""
+          }
+          return btn
+        })
+      }
+
+      return cardData
+    })
 
     this.carouselCardsInputTarget.value = JSON.stringify(data)
     this.updatePreview()
@@ -211,6 +382,62 @@ export default class extends Controller {
         this.previewMediaPlaceholderTarget.classList.add("hidden")
       }
     }
+
+    // Render buttons preview
+    this.renderButtonsPreview()
+  }
+
+  renderButtonsPreview() {
+    if (!this.hasPreviewButtonsTarget) return
+
+    let buttons = []
+    try {
+      if (this.hasButtonsInputTarget && this.buttonsInputTarget.value) {
+        buttons = JSON.parse(this.buttonsInputTarget.value)
+      }
+    } catch(e) { /* ignore */ }
+
+    const container = this.previewButtonsTarget
+    container.innerHTML = ""
+
+    if (!buttons.length) return
+
+    const hasQR = buttons.some(b => b.type === "QUICK_REPLY")
+
+    if (hasQR) {
+      // Quick Reply: horizontal row of rounded buttons
+      const row = document.createElement("div")
+      row.className = "flex flex-wrap gap-1 mt-1"
+
+      buttons.filter(b => b.type === "QUICK_REPLY").forEach(b => {
+        const pill = document.createElement("div")
+        pill.className = "rounded-lg bg-white border border-gray-200 px-3 py-1.5 text-center shadow-sm"
+        pill.style.flex = "1 1 auto"
+        pill.style.minWidth = "0"
+        pill.innerHTML = `<span class="text-[12px] font-medium" style="color: #00A5F4;">${this.escapeHtml(b.text || "Button")}</span>`
+        row.appendChild(pill)
+      })
+
+      container.appendChild(row)
+    } else {
+      // CTA: stacked full-width buttons with icons
+      buttons.forEach(b => {
+        const btn = document.createElement("div")
+        btn.className = "rounded-lg bg-white border border-gray-200 px-3 py-2 text-center shadow-sm mt-1 flex items-center justify-center gap-1.5"
+
+        let icon = ""
+        if (b.type === "URL") {
+          icon = `<svg class="h-3.5 w-3.5" style="color: #00A5F4;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>`
+        } else if (b.type === "PHONE_NUMBER") {
+          icon = `<svg class="h-3.5 w-3.5" style="color: #00A5F4;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25z" /></svg>`
+        } else if (b.type === "COPY_CODE") {
+          icon = `<svg class="h-3.5 w-3.5" style="color: #00A5F4;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" /></svg>`
+        }
+
+        btn.innerHTML = `${icon}<span class="text-[12px] font-medium" style="color: #00A5F4;">${this.escapeHtml(b.text || "Button")}</span>`
+        container.appendChild(btn)
+      })
+    }
   }
 
   updateCarouselPreview() {
@@ -220,12 +447,32 @@ export default class extends Controller {
     let cardsData = []
     if (this.hasCardsContainerTarget) {
       const cards = this.cardsContainerTarget.querySelectorAll(".carousel-card")
-      cardsData = Array.from(cards).map(card => ({
-        image_url: card.querySelector(".card-image-url")?.value || "",
-        body: card.querySelector(".card-body")?.value || "",
-        button_text: card.querySelector(".card-button-text")?.value || "",
-        button_url: card.querySelector(".card-button-url")?.value || ""
-      }))
+      cardsData = Array.from(cards).map(card => {
+        const cardData = {
+          image_url: card.querySelector(".card-image-url")?.value || "",
+          body: card.querySelector(".card-body")?.value || ""
+        }
+
+        // Read buttons from card-button-rows
+        const btnRows = card.querySelectorAll(".card-button-row")
+        if (btnRows.length > 0) {
+          cardData.buttons = Array.from(btnRows).map(row => {
+            const btn = {
+              type: row.dataset.buttonType,
+              text: row.querySelector(".card-btn-text")?.value || ""
+            }
+            if (row.dataset.buttonType === "URL") {
+              btn.url = row.querySelector(".card-btn-url")?.value || ""
+            }
+            if (row.dataset.buttonType === "PHONE_NUMBER") {
+              btn.phone_number = row.querySelector(".card-btn-phone")?.value || ""
+            }
+            return btn
+          })
+        }
+
+        return cardData
+      })
     }
 
     // Fallback to hidden field JSON
@@ -258,9 +505,20 @@ export default class extends Controller {
 
       const placeholderDisplay = card.image_url ? "display:none;" : ""
 
-      const buttonHtml = card.button_text
-        ? `<div style="border-top: 1px solid rgba(0,0,0,0.08);"><div class="py-2 text-center"><span class="text-[12px] font-medium" style="color: #00A5F4;">${this.escapeHtml(card.button_text)}</span></div></div>`
-        : ""
+      // Build buttons HTML for card
+      let buttonsHtml = ""
+      const cardButtons = card.buttons || []
+      if (cardButtons.length > 0) {
+        buttonsHtml = cardButtons.map(b => {
+          const icon = b.type === "URL"
+            ? `<svg class="h-3 w-3 inline mr-1" style="color:#00A5F4;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>`
+            : ""
+          return `<div style="border-top: 1px solid rgba(0,0,0,0.08);"><div class="py-2 text-center">${icon}<span class="text-[12px] font-medium" style="color: #00A5F4;">${this.escapeHtml(b.text || "Button")}</span></div></div>`
+        }).join("")
+      } else if (card.button_text) {
+        // Legacy single button
+        buttonsHtml = `<div style="border-top: 1px solid rgba(0,0,0,0.08);"><div class="py-2 text-center"><span class="text-[12px] font-medium" style="color: #00A5F4;">${this.escapeHtml(card.button_text)}</span></div></div>`
+      }
 
       const imgTag = card.image_url
         ? `<img src="${this.escapeHtml(card.image_url)}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display=''">`
@@ -276,7 +534,7 @@ export default class extends Controller {
         <div class="px-2.5 py-2">
           <p class="text-[12px] text-gray-900 leading-[1.35] line-clamp-3">${this.escapeHtml(card.body || `Card ${i + 1} body`)}</p>
         </div>
-        ${buttonHtml}
+        ${buttonsHtml}
       `
       container.appendChild(cardEl)
     })

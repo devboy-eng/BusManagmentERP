@@ -127,6 +127,48 @@
           <%= f.text_area :body, rows: 6, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Hi {{1}}, your order {{2}} has been confirmed.", data: { template_form_target: "bodyInput", action: "input->template-form#updatePreview" } %>
         </div>
 
+        <%# === Buttons Section (Standard templates only) === %>
+        <div data-template-form-target="buttonsSection" class="<%= 'hidden' if @template.carousel? %> space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-medium text-gray-700">Buttons <span class="text-gray-400 font-normal">(Optional)</span></label>
+            <div class="flex items-center gap-1">
+              <button type="button" data-action="template-form#addButton" data-button-type="QUICK_REPLY" class="rounded-md bg-indigo-50 px-2 py-1 text-[10px] font-medium text-indigo-600 hover:bg-indigo-100 transition">+ Quick Reply</button>
+              <button type="button" data-action="template-form#addButton" data-button-type="URL" class="rounded-md bg-indigo-50 px-2 py-1 text-[10px] font-medium text-indigo-600 hover:bg-indigo-100 transition">+ URL</button>
+              <button type="button" data-action="template-form#addButton" data-button-type="PHONE_NUMBER" class="rounded-md bg-indigo-50 px-2 py-1 text-[10px] font-medium text-indigo-600 hover:bg-indigo-100 transition">+ Phone</button>
+              <button type="button" data-action="template-form#addButton" data-button-type="COPY_CODE" class="rounded-md bg-indigo-50 px-2 py-1 text-[10px] font-medium text-indigo-600 hover:bg-indigo-100 transition">+ Copy Code</button>
+            </div>
+          </div>
+
+          <%# Mix warning banner %>
+          <div data-template-form-target="buttonMixWarning" class="hidden rounded-lg bg-amber-50 border border-amber-200 p-2.5 flex items-start gap-2">
+            <svg class="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+            <p class="text-[11px] text-amber-700">You cannot mix Quick Reply buttons with Call-to-Action buttons (URL, Phone, Copy Code). Please remove one type before adding another.</p>
+          </div>
+
+          <%# Buttons container %>
+          <div data-template-form-target="buttonsContainer" class="grid grid-cols-2 gap-2">
+            <% @template.parsed_buttons.each_with_index do |btn, i| %>
+              <div class="button-row rounded-lg border border-gray-200 bg-gray-50 p-2.5 space-y-1.5" data-button-type="<%= btn['type'] %>">
+                <div class="flex items-center justify-between">
+                  <span class="inline-flex items-center rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-medium text-gray-600 whitespace-nowrap"><%= btn['type'].gsub('_', ' ') %></span>
+                  <button type="button" data-action="template-form#removeButton" class="text-red-400 hover:text-red-600 transition">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+                <input type="text" class="btn-text w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-[11px] text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="Button text (max 25)" maxlength="25" value="<%= btn['text'] %>" data-action="input->template-form#updateButtonsData">
+                <% if btn['type'] == 'URL' %>
+                  <input type="text" class="btn-url w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-[11px] text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="https://example.com/{{1}}" value="<%= btn['url'] %>" data-action="input->template-form#updateButtonsData">
+                <% elsif btn['type'] == 'PHONE_NUMBER' %>
+                  <input type="text" class="btn-phone w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-[11px] text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="+919876543210" value="<%= btn['phone_number'] %>" data-action="input->template-form#updateButtonsData">
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <%# Hidden field to store buttons JSON %>
+          <%= f.hidden_field :buttons, data: { template_form_target: "buttonsInput" } %>
+        </div>
+
         <%# === Carousel Cards Section === %>
         <div data-template-form-target="carouselFields" class="<%= 'hidden' unless @template.carousel? %> space-y-4">
           <div class="flex items-center justify-between">
@@ -164,13 +206,31 @@
                     <label class="block text-[11px] font-medium text-gray-600 mb-1">Card Body</label>
                     <textarea class="card-body w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" rows="2" placeholder="Card description text" data-action="input->template-form#updateCarouselData"><%= card['body'] %></textarea>
                   </div>
-                  <div>
-                    <label class="block text-[11px] font-medium text-gray-600 mb-1">Button Text <span class="text-gray-400 font-normal">(Optional)</span></label>
-                    <input type="text" class="card-button-text w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. View Details" value="<%= card.dig('button_text') %>" data-action="input->template-form#updateCarouselData">
-                  </div>
-                  <div>
-                    <label class="block text-[11px] font-medium text-gray-600 mb-1">Button URL <span class="text-gray-400 font-normal">(Optional)</span></label>
-                    <input type="text" class="card-button-url w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" placeholder="https://example.com/page" value="<%= card.dig('button_url') %>" data-action="input->template-form#updateCarouselData">
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                      <label class="block text-[11px] font-medium text-gray-600">Buttons <span class="text-gray-400 font-normal">(max 2)</span></label>
+                      <select class="card-add-button rounded border border-gray-300 bg-white px-2 py-1 text-[10px] text-gray-600 focus:border-indigo-500 focus:outline-none" data-action="change->template-form#addCardButton">
+                        <option value="">+ Add button</option>
+                        <option value="QUICK_REPLY">Quick Reply</option>
+                        <option value="URL">URL</option>
+                        <option value="PHONE_NUMBER">Phone Number</option>
+                      </select>
+                    </div>
+                    <div class="card-buttons-container space-y-1.5">
+                      <% card_buttons = card["buttons"] || (card["button_text"].present? ? [{"type" => card["button_url"].present? ? "URL" : "QUICK_REPLY", "text" => card["button_text"], "url" => card["button_url"]}] : []) %>
+                      <% card_buttons.each do |cb| %>
+                        <div class="card-button-row flex items-center gap-1.5" data-button-type="<%= cb['type'] %>">
+                          <span class="text-[9px] font-medium text-gray-500 w-8 shrink-0"><%= cb['type'] == 'URL' ? 'URL' : 'QR' %></span>
+                          <input type="text" class="card-btn-text flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-[11px] text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none" placeholder="Button text" maxlength="25" value="<%= cb['text'] %>" data-action="input->template-form#updateCarouselData">
+                          <% if cb['type'] == 'URL' %>
+                            <input type="text" class="card-btn-url flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-[11px] text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none" placeholder="https://..." value="<%= cb['url'] %>" data-action="input->template-form#updateCarouselData">
+                          <% end %>
+                          <button type="button" data-action="template-form#removeCardButton" class="text-red-400 hover:text-red-600">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
+                        </div>
+                      <% end %>
+                    </div>
                   </div>
                 </div>
               <% end %>

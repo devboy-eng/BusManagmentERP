@@ -9,6 +9,9 @@ class WhatsappTemplate < ApplicationRecord
 
   TEMPLATE_TYPES = %w[standard carousel].freeze
 
+  BUTTON_TYPES = %w[QUICK_REPLY URL PHONE_NUMBER COPY_CODE].freeze
+  CTA_BUTTON_TYPES = %w[URL PHONE_NUMBER COPY_CODE].freeze
+
   LANGUAGES = {
     "af" => "Afrikaans", "sq" => "Albanian", "ar" => "Arabic", "ar_EG" => "Arabic (Egypt)",
     "ar_AE" => "Arabic (UAE)", "ar_LB" => "Arabic (Lebanon)", "ar_MA" => "Arabic (Morocco)",
@@ -61,6 +64,7 @@ class WhatsappTemplate < ApplicationRecord
   validates :body, length: { maximum: 1024 }
   validates :footer, length: { maximum: 60 }
   validate :validate_carousel_cards, if: :carousel?
+  validate :validate_buttons
 
   scope :ordered, -> { order(created_at: :desc) }
 
@@ -96,11 +100,63 @@ class WhatsappTemplate < ApplicationRecord
     self.carousel_cards = cards.to_json
   end
 
+  def parsed_buttons
+    val = read_attribute(:buttons)
+    return [] if val.blank?
+    JSON.parse(val) rescue []
+  end
+
+  def parsed_buttons=(btns)
+    write_attribute(:buttons, btns.to_json)
+  end
+
   def template_type_display
     carousel? ? "Carousel" : "Standard"
   end
 
   private
+
+  def validate_buttons
+    btns = parsed_buttons
+    return if btns.empty?
+
+    has_quick_reply = btns.any? { |b| b["type"] == "QUICK_REPLY" }
+    has_cta = btns.any? { |b| b["type"].in?(CTA_BUTTON_TYPES) }
+
+    if has_quick_reply && has_cta
+      errors.add(:buttons, "cannot mix Quick Reply and Call-to-Action buttons")
+      return
+    end
+
+    if has_quick_reply && btns.size > 10
+      errors.add(:buttons, "can have at most 10 Quick Reply buttons")
+    end
+
+    if has_cta && btns.size > 2
+      errors.add(:buttons, "can have at most 2 Call-to-Action buttons")
+    end
+
+    btns.each_with_index do |btn, i|
+      unless btn["type"].in?(BUTTON_TYPES)
+        errors.add(:base, "Button #{i + 1} has an invalid type")
+        next
+      end
+
+      if btn["text"].blank?
+        errors.add(:base, "Button #{i + 1} text is required")
+      elsif btn["text"].length > 25
+        errors.add(:base, "Button #{i + 1} text must be 25 characters or less")
+      end
+
+      if btn["type"] == "URL" && btn["url"].blank?
+        errors.add(:base, "Button #{i + 1} URL is required")
+      end
+
+      if btn["type"] == "PHONE_NUMBER" && btn["phone_number"].blank?
+        errors.add(:base, "Button #{i + 1} phone number is required")
+      end
+    end
+  end
 
   def validate_carousel_cards
     cards = parsed_carousel_cards
