@@ -55,7 +55,14 @@ class LeadsController < ApplicationController
   end
 
   def update_status
-    if @lead.update(status: params[:status])
+    old_status = @lead.status
+    new_status = params[:status]
+
+    if @lead.update(status: new_status)
+      @lead.comments.create!(
+        body: "Status changed from #{old_status.titleize} to #{new_status.titleize}",
+        user: current_user
+      )
       redirect_back fallback_location: leads_path, notice: "Lead status updated."
     else
       redirect_back fallback_location: leads_path, alert: "Failed to update status."
