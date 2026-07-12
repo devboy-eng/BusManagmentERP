@@ -73,6 +73,40 @@ class WhatsappTemplatesController < ApplicationController
     redirect_to whatsapp_templates_path, alert: "Error: #{e.message}"
   end
 
+  def sync_all
+    unless WhatsappSetting.configured?
+      redirect_to whatsapp_templates_path, alert: "Please configure WhatsApp settings first."
+      return
+    end
+
+    templates = WhatsappTemplate.where.not(meta_template_id: [nil, ""])
+    if templates.empty?
+      redirect_to whatsapp_templates_path, alert: "No templates synced to Meta yet."
+      return
+    end
+
+    service = WhatsappService.new
+    synced = 0
+    failed = 0
+
+    templates.find_each do |template|
+      result = service.sync_status_from_meta(template)
+      if result[:success]
+        synced += 1
+      else
+        failed += 1
+      end
+    end
+
+    if failed > 0
+      redirect_to whatsapp_templates_path, notice: "Synced #{synced} template(s). #{failed} failed to sync."
+    else
+      redirect_to whatsapp_templates_path, notice: "All #{synced} template(s) synced from Meta successfully."
+    end
+  rescue => e
+    redirect_to whatsapp_templates_path, alert: "Error: #{e.message}"
+  end
+
   def delete_from_meta
     unless @template.meta_template_id.present?
       redirect_to whatsapp_templates_path, alert: "Template not synced to Meta."

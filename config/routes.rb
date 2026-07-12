@@ -43,6 +43,7 @@ Rails.application.routes.draw do
     member do
       post :send_reply
       patch :mark_read
+      post :send_to_lead
     end
   end
 
@@ -50,6 +51,7 @@ Rails.application.routes.draw do
     collection do
       get :compose
       post :send_message
+      post :send_template
       post :send_bulk
       post :send_quick
       get :message_log
@@ -63,6 +65,9 @@ Rails.application.routes.draw do
   resources :uploads, only: [:create]
 
   resources :whatsapp_templates, except: [:show] do
+    collection do
+      post :sync_all
+    end
     member do
       post :sync_to_meta
       post :sync_status

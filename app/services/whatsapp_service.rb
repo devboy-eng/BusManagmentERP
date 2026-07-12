@@ -65,6 +65,10 @@ class WhatsappService
 
     conversation.update_last_message!(msg_record)
 
+    # Broadcast to chat UI so it updates in real-time
+    broadcast_new_message(conversation, msg_record)
+    broadcast_conversation_update(conversation)
+
     { record: msg_record, result: result }
   end
 
@@ -80,6 +84,124 @@ class WhatsappService
       error = response.parsed_response.dig("error", "message") || "Connection failed"
       { success: false, error: error }
     end
+  end
+
+  # --- Send Template Message ---
+
+  def send_template_message(phone:, template:, variables: [])
+    normalized = normalize_phone(phone)
+    meta_name = template.name.downcase.gsub(/[^a-z0-9_]/, "_").gsub(/_+/, "_").gsub(/\A_|_\z/, "")
+
+    template_payload = {
+      name: meta_name,
+      language: { code: template.language || "en" }
+    }
+
+    # Build components with variable substitutions
+    components = []
+
+    if template.category == "authentication"
+      # Authentication templates: body param = OTP code
+      otp_code = variables.first.to_s.presence || "000000"
+      components << {
+        type: "body",
+        parameters: [{ type: "text", text: otp_code }]
+      }
+      components << {
+        type: "button",
+        sub_type: "url",
+        index: "0",
+        parameters: [{ type: "text", text: otp_code }]
+      }
+    else
+      # Header variables (if header is text with {{1}})
+      if template.header_type == "text" && template.header_text&.match?(/\{\{\d+\}\}/)
+        header_vars = template.header_text.scan(/\{\{\d+\}\}/)
+        components << {
+          type: "header",
+          parameters: header_vars.map.with_index { |_, i| { type: "text", text: variables[i].to_s.presence || "Sample" } }
+        }
+      end
+
+      # Body variables ({{1}}, {{2}}, etc.)
+      if template.body&.match?(/\{\{\d+\}\}/)
+        body_vars = template.body.scan(/\{\{\d+\}\}/)
+        header_var_count = (template.header_type == "text" && template.header_text&.match?(/\{\{\d+\}\}/)) ? template.header_text.scan(/\{\{\d+\}\}/).size : 0
+        components << {
+          type: "body",
+          parameters: body_vars.map.with_index { |_, i| { type: "text", text: variables[header_var_count + i].to_s.presence || "Sample" } }
+        }
+      end
+    end
+
+    template_payload[:components] = components if components.any?
+
+    request_body = {
+      messaging_product: "whatsapp",
+      to: normalized,
+      type: "template",
+      template: template_payload
+    }
+
+    Rails.logger.info("[WhatsApp Template Send] To: #{normalized}, Template: #{meta_name}, Payload: #{request_body.to_json}")
+
+    response = HTTParty.post(
+      "#{BASE_URL}/#{@phone_number_id}/messages",
+      headers: {
+        "Authorization" => "Bearer #{@access_token}",
+        "Content-Type" => "application/json"
+      },
+      body: request_body.to_json
+    )
+
+    Rails.logger.info("[WhatsApp Template Send] Response: #{response.code} #{response.body}")
+
+    if response.success?
+      message_id = response.parsed_response.dig("messages", 0, "id")
+      { success: true, message_id: message_id }
+    else
+      error = response.parsed_response.dig("error", "message") || "Unknown API error (#{response.code})"
+      { success: false, error: error }
+    end
+  end
+
+  def send_template_and_log(recipient:, template:, variables:, user:)
+    conversation = WhatsappConversation.find_or_start(
+      phone: recipient.phone,
+      name: recipient.name,
+      contact: recipient
+    )
+
+    # Build the display body by replacing variables
+    display_body = template.body.dup
+    variables.each_with_index { |val, i| display_body.gsub!("{{#{i + 1}}}", val.to_s) }
+
+    msg_record = WhatsappMessage.create!(
+      recipient: recipient,
+      recipient_name: recipient.name,
+      recipient_phone: recipient.phone,
+      message_body: display_body,
+      user: user,
+      status: :queued,
+      direction: "outgoing",
+      whatsapp_conversation: conversation
+    )
+
+    result = send_template_message(phone: recipient.phone, template: template, variables: variables)
+
+    if result[:success]
+      msg_record.update!(status: :sent, whatsapp_message_id: result[:message_id])
+    else
+      msg_record.update!(status: :failed, error_message: result[:error])
+    end
+
+    conversation.update_last_message!(msg_record)
+
+    # Broadcast to chat UI so it updates in real-time
+    broadcast_new_message(conversation, msg_record)
+    broadcast_conversation_update(conversation)
+
+    { record: msg_record, result: result }
   end
 
   # --- Template Management (not auto-called) ---
@@ -130,13 +252,17 @@ class WhatsappService
     response = HTTParty.get(
       "#{BASE_URL}/#{template.meta_template_id}",
       headers: { "Authorization" => "Bearer #{@access_token}" },
-      query: { fields: "status" }
+      query: { fields: "status,language,category,name" }
     )
 
     if response.success?
-      new_status = response.parsed_response["status"]&.downcase
-      template.update!(status: new_status) if new_status.present?
-      { success: true, status: new_status }
+      data = response.parsed_response
+      updates = {}
+      updates[:status] = data["status"].downcase if data["status"].present?
+      updates[:language] = data["language"] if data["language"].present?
+      updates[:category] = data["category"].downcase if data["category"].present?
+      template.update!(updates) if updates.any?
+      { success: true, status: updates[:status] }
     else
       error = response.parsed_response.dig("error", "message") || "Failed to sync status"
       { success: false, error: error }
@@ -171,19 +297,81 @@ class WhatsappService
     self.class.normalize_phone(phone)
   end
 
+  def broadcast_new_message(conversation, message)
+    html = ApplicationController.renderer.render(
+      partial: "whatsapp_chats/message",
+      locals: { message: message }
+    )
+
+    WhatsappChatChannel.broadcast_to(
+      conversation,
+      { type: "new_message", html: html }
+    )
+  rescue => e
+    Rails.logger.error "[WhatsappService] Broadcast new_message failed: #{e.message}"
+  end
+
+  def broadcast_conversation_update(conversation)
+    html = ApplicationController.renderer.render(
+      partial: "whatsapp_chats/conversation",
+      locals: { conversation: conversation, selected: false }
+    )
+
+    ActionCable.server.broadcast(
+      "whatsapp_conversations",
+      { type: "conversation_update", conversation_id: conversation.id, html: html }
+    )
+  rescue => e
+    Rails.logger.error "[WhatsappService] Broadcast conversation_update failed: #{e.message}"
+  end
+
   def build_template_payload(template)
     # Meta requires: lowercase, alphanumeric + underscores only, max 512 chars
     meta_name = template.name.downcase.gsub(/[^a-z0-9_]/, "_").gsub(/_+/, "_").gsub(/\A_|_\z/, "")
 
+    category = (template.category || "marketing").upcase
+
+    components = if template.category == "authentication"
+                   build_authentication_components(template)
+                 elsif template.carousel?
+                   build_carousel_components(template)
+                 else
+                   build_components(template)
+                 end
+
     payload = {
       name: meta_name,
       language: template.language || "en",
-      category: template.category || "marketing",
-      allow_category_change: true,
-      components: template.carousel? ? build_carousel_components(template) : build_components(template)
+      category: category,
+      components: components
     }
 
+    # allow_category_change not supported for authentication templates
+    payload[:allow_category_change] = true unless template.category == "authentication"
+
     payload
+  end
+
+  def build_authentication_components(template)
+    components = []
+
+    # BODY — Meta auto-generates the OTP message text.
+    # add_security_recommendation appends "Don't share this code."
+    components << { type: "BODY", add_security_recommendation: true }
+
+    # FOOTER — optional code expiration (extract number from footer text)
+    if template.footer.present?
+      minutes = template.footer.scan(/\d+/).first&.to_i
+      components << { type: "FOOTER", code_expiration_minutes: minutes || 5 } if minutes
+    end
+
+    # BUTTONS — OTP copy-code button (required for authentication templates)
+    components << {
+      type: "BUTTONS",
+      buttons: [{ type: "OTP", otp_type: "COPY_CODE" }]
+    }
+
+    components
   end
 
   def build_components(template)

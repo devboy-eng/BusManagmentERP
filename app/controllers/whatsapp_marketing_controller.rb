@@ -81,6 +81,58 @@ class WhatsappMarketingController < ApplicationController
     redirect_to whatsapp_marketing_index_path, notice: "Bulk WhatsApp message queued for #{count} recipient(s)."
   end
 
+  def send_template
+    template = WhatsappTemplate.find(params[:template_id])
+    recipient_ids = params[:recipient_ids] || []
+    type = params[:type]
+    variables = (params[:variables] || []).map(&:to_s)
+
+    if recipient_ids.empty?
+      redirect_to compose_whatsapp_marketing_index_path(type: type), alert: "Please select at least one recipient."
+      return
+    end
+
+    unless template.status == "approved"
+      redirect_to compose_whatsapp_marketing_index_path(type: type), alert: "Template must be approved by Meta before sending."
+      return
+    end
+
+    unless WhatsappSetting.configured?
+      redirect_to compose_whatsapp_marketing_index_path(type: type), alert: "WhatsApp API is not configured."
+      return
+    end
+
+    model = type == "customers" ? Customer : Lead
+    service = WhatsappService.new
+    sent = 0
+    failed = 0
+    last_error = nil
+
+    recipient_ids.each do |id|
+      recipient = model.find(id)
+      result = service.send_template_and_log(
+        recipient: recipient,
+        template: template,
+        variables: variables,
+        user: current_user
+      )
+      if result[:result][:success]
+        sent += 1
+      else
+        failed += 1
+        last_error = result[:result][:error]
+      end
+    end
+
+    if failed > 0
+      redirect_to whatsapp_marketing_index_path, alert: "Template send failed for #{failed} recipient(s): #{last_error}"
+    else
+      redirect_to whatsapp_marketing_index_path, notice: "Template '#{template.name}' sent to #{sent} recipient(s)."
+    end
+  rescue => e
+    redirect_to compose_whatsapp_marketing_index_path(type: type), alert: "Error: #{e.message}"
+  end
+
   def send_quick
     recipient_type = params[:recipient_type]
     recipient_id = params[:recipient_id]

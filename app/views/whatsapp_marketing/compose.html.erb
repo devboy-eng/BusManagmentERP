@@ -1,5 +1,7 @@
 <% content_for :page_title, "Compose WhatsApp Message" %>
 
+<% approved_templates = @templates.select { |t| t.status == "approved" } %>
+
 <div class="max-w-4xl">
   <div class="mb-6">
     <h2 class="text-lg font-semibold text-gray-900">Compose Message - <%= @type.titleize %></h2>
@@ -13,40 +15,53 @@
     </div>
   <% end %>
 
-  <%= form_tag send_message_whatsapp_marketing_index_path, method: :post do %>
-    <%= hidden_field_tag :type, @type %>
+  <!-- Recipients (shared between both forms) -->
+  <div class="rounded-xl border border-gray-200 bg-white p-6 mb-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-4">Select Recipients</h3>
+    <div class="space-y-2 max-h-80 overflow-y-auto" id="recipients-list">
+      <% @recipients.each do |recipient| %>
+        <label class="flex items-center gap-3 rounded-lg bg-gray-50 p-3 cursor-pointer hover:bg-gray-100 transition">
+          <input type="checkbox" name="recipient_ids[]" value="<%= recipient.id %>" form="custom-msg-form" class="recipient-checkbox h-4 w-4 rounded border-gray-300 bg-white text-indigo-600 focus:ring-indigo-500">
+          <div>
+            <p class="text-xs font-medium text-gray-900"><%= recipient.name %></p>
+            <p class="text-[11px] text-gray-500"><%= recipient.phone %></p>
+          </div>
+        </label>
+      <% end %>
+      <% if @recipients.empty? %>
+        <p class="text-xs text-gray-500 text-center py-4">No <%= @type %> available.</p>
+      <% end %>
+    </div>
+  </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Recipients -->
-      <div class="rounded-xl border border-gray-200 bg-white p-6">
-        <h3 class="text-sm font-semibold text-gray-900 mb-4">Select Recipients</h3>
-        <div class="space-y-2 max-h-80 overflow-y-auto">
-          <% @recipients.each do |recipient| %>
-            <label class="flex items-center gap-3 rounded-lg bg-gray-50 p-3 cursor-pointer hover:bg-gray-100 transition">
-              <%= check_box_tag "recipient_ids[]", recipient.id, false, class: "h-4 w-4 rounded border-gray-300 bg-white text-indigo-600 focus:ring-indigo-500" %>
-              <div>
-                <p class="text-xs font-medium text-gray-900"><%= recipient.name %></p>
-                <p class="text-[11px] text-gray-500"><%= recipient.phone %></p>
-              </div>
-            </label>
-          <% end %>
-          <% if @recipients.empty? %>
-            <p class="text-xs text-gray-500 text-center py-4">No <%= @type %> available.</p>
-          <% end %>
-        </div>
-      </div>
+  <!-- Tabs: Custom Message vs Template Message -->
+  <div class="rounded-xl border border-gray-200 bg-white overflow-hidden" data-controller="tabs">
+    <div class="flex border-b border-gray-200">
+      <button type="button" data-tabs-target="tab" data-action="click->tabs#switch" data-tab="custom"
+              class="flex-1 px-4 py-3 text-xs font-medium text-center transition border-b-2 border-indigo-600 text-indigo-600">
+        Custom Message
+      </button>
+      <button type="button" data-tabs-target="tab" data-action="click->tabs#switch" data-tab="template"
+              class="flex-1 px-4 py-3 text-xs font-medium text-center transition border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+        Template Message
+        <% if approved_templates.any? %>
+          <span class="ml-1 inline-flex items-center justify-center h-4 min-w-[16px] rounded-full bg-green-100 px-1 text-[10px] font-bold text-green-700"><%= approved_templates.size %></span>
+        <% end %>
+      </button>
+    </div>
 
-      <!-- Message -->
-      <div class="rounded-xl border border-gray-200 bg-white p-6">
-        <h3 class="text-sm font-semibold text-gray-900 mb-4">Message</h3>
-        <%= text_area_tag :message, nil, rows: 8, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Type your promotional message here..." %>
+    <!-- Custom Message Tab -->
+    <div data-tabs-target="panel" data-tab="custom" class="p-6">
+      <%= form_tag send_message_whatsapp_marketing_index_path, method: :post, id: "custom-msg-form" do %>
+        <%= hidden_field_tag :type, @type %>
+        <%= text_area_tag :message, nil, rows: 8, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Type your message here..." %>
 
         <% if @templates.any? %>
           <div class="mt-4 rounded-lg bg-gray-50 p-3">
-            <p class="text-[11px] font-medium text-gray-600 mb-2">Message Templates</p>
+            <p class="text-[11px] font-medium text-gray-600 mb-2">Quick Insert from Templates</p>
             <div class="space-y-2">
               <% @templates.each do |template| %>
-                <button type="button" class="w-full text-left rounded-lg bg-gray-100 p-2 text-[11px] text-gray-600 hover:bg-gray-200 transition" onclick="document.querySelector('textarea[name=message]').value = '<%= j template.body %>'">
+                <button type="button" class="w-full text-left rounded-lg bg-gray-100 p-2 text-[11px] text-gray-600 hover:bg-gray-200 transition" onclick="document.querySelector('#custom-msg-form textarea[name=message]').value = '<%= j template.body %>'">
                   <span class="font-medium"><%= template.name %></span>
                   <% if template.category.present? %>
                     <span class="text-gray-400 ml-1">(<%= template.category %>)</span>
@@ -55,17 +70,142 @@
               <% end %>
             </div>
           </div>
-        <% else %>
-          <div class="mt-4 rounded-lg bg-gray-50 p-3">
-            <p class="text-[11px] text-gray-500">No templates yet. <%= link_to "Create one", new_whatsapp_template_path, class: "text-indigo-600 hover:text-indigo-500" %></p>
-          </div>
         <% end %>
 
         <div class="flex items-center gap-3 mt-4">
           <%= submit_tag "Send Message", class: "rounded-lg bg-green-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-green-500 transition cursor-pointer" %>
           <%= link_to "Cancel", whatsapp_marketing_index_path, class: "rounded-lg border border-gray-300 px-6 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" %>
         </div>
-      </div>
+      <% end %>
     </div>
-  <% end %>
+
+    <!-- Template Message Tab -->
+    <div data-tabs-target="panel" data-tab="template" class="p-6 hidden">
+      <% if approved_templates.any? %>
+        <%= form_tag send_template_whatsapp_marketing_index_path, method: :post, id: "template-msg-form" do %>
+          <%= hidden_field_tag :type, @type %>
+
+          <div class="mb-4">
+            <label class="block text-xs font-medium text-gray-700 mb-1">Select Template</label>
+            <select name="template_id" id="template-select" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                    onchange="showTemplatePreview(this.value)">
+              <option value="">— Choose a template —</option>
+              <% approved_templates.each do |template| %>
+                <% var_count = template.category == "authentication" ? 1 : template.body.scan(/\{\{\d+\}\}/).size %>
+                <option value="<%= template.id %>"
+                        data-body="<%= j template.body %>"
+                        data-header="<%= j(template.header_text.to_s) %>"
+                        data-category="<%= template.category %>"
+                        data-vars="<%= var_count %>"><%= template.name %> (<%= template.category %>)</option>
+              <% end %>
+            </select>
+          </div>
+
+          <!-- Template Preview -->
+          <div id="template-preview" class="hidden mb-4">
+            <div class="rounded-lg bg-green-50 border border-green-200 p-3">
+              <p class="text-[10px] font-medium text-green-700 mb-1">Template Preview</p>
+              <p class="text-xs text-gray-800 whitespace-pre-wrap" id="template-body-preview"></p>
+            </div>
+          </div>
+
+          <!-- Variable Inputs -->
+          <div id="template-variables" class="hidden mb-4">
+            <p class="text-xs font-medium text-gray-700 mb-2">Template Variables</p>
+            <div id="variable-inputs" class="space-y-2"></div>
+          </div>
+
+          <div class="flex items-center gap-3 mt-4">
+            <%= submit_tag "Send Template", class: "rounded-lg bg-green-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-green-500 transition cursor-pointer" %>
+            <%= link_to "Cancel", whatsapp_marketing_index_path, class: "rounded-lg border border-gray-300 px-6 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="text-center py-8">
+          <p class="text-xs text-gray-500 mb-2">No approved templates available.</p>
+          <p class="text-[11px] text-gray-400">Create a template and sync it to Meta for approval first.</p>
+          <%= link_to "Create Template", new_whatsapp_template_path, class: "mt-3 inline-block rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-500 transition" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
 </div>
+
+<script>
+// Tab switching
+document.addEventListener("DOMContentLoaded", function() {
+  const tabs = document.querySelectorAll('[data-tabs-target="tab"]');
+  const panels = document.querySelectorAll('[data-tabs-target="panel"]');
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", function() {
+      const targetTab = this.dataset.tab;
+
+      tabs.forEach(t => {
+        t.classList.remove("border-indigo-600", "text-indigo-600");
+        t.classList.add("border-transparent", "text-gray-500");
+      });
+      this.classList.remove("border-transparent", "text-gray-500");
+      this.classList.add("border-indigo-600", "text-indigo-600");
+
+      panels.forEach(p => {
+        p.classList.toggle("hidden", p.dataset.tab !== targetTab);
+      });
+
+      // Associate checkboxes with the correct form
+      const formId = targetTab === "custom" ? "custom-msg-form" : "template-msg-form";
+      document.querySelectorAll(".recipient-checkbox").forEach(cb => {
+        cb.setAttribute("form", formId);
+      });
+    });
+  });
+
+  // Set initial form association
+  document.querySelectorAll(".recipient-checkbox").forEach(cb => {
+    cb.setAttribute("form", "custom-msg-form");
+  });
+});
+
+// Template selection
+function showTemplatePreview(templateId) {
+  const preview = document.getElementById("template-preview");
+  const bodyPreview = document.getElementById("template-body-preview");
+  const variablesSection = document.getElementById("template-variables");
+  const variableInputs = document.getElementById("variable-inputs");
+
+  if (!templateId) {
+    preview.classList.add("hidden");
+    variablesSection.classList.add("hidden");
+    return;
+  }
+
+  const option = document.querySelector('#template-select option[value="' + templateId + '"]');
+  const body = option.dataset.body;
+  const category = option.dataset.category;
+  const varCount = parseInt(option.dataset.vars) || 0;
+
+  bodyPreview.textContent = category === "authentication"
+    ? "(Meta auto-generates the OTP message body)"
+    : body;
+  preview.classList.remove("hidden");
+
+  // Generate variable inputs
+  variableInputs.innerHTML = "";
+  if (varCount > 0) {
+    for (let i = 0; i < varCount; i++) {
+      const div = document.createElement("div");
+      if (category === "authentication") {
+        div.innerHTML = '<label class="block text-[11px] text-gray-600 mb-0.5">OTP Code</label>' +
+          '<input type="text" name="variables[]" placeholder="Enter the OTP code (e.g. 123456)" required class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none">';
+      } else {
+        div.innerHTML = '<label class="block text-[11px] text-gray-600 mb-0.5">Variable {{' + (i + 1) + '}}</label>' +
+          '<input type="text" name="variables[]" placeholder="Enter value for {{' + (i + 1) + '}}" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none">';
+      }
+      variableInputs.appendChild(div);
+    }
+    variablesSection.classList.remove("hidden");
+  } else {
+    variablesSection.classList.add("hidden");
+  }
+}
+</script>
