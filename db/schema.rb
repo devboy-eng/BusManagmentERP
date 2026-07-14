@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_12_000001) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_14_000001) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -46,6 +46,25 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_12_000001) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "csat_responses", force: :cascade do |t|
+    t.string "token", null: false
+    t.string "respondent_type"
+    t.integer "respondent_id"
+    t.integer "user_id"
+    t.integer "service_rating"
+    t.integer "support_rating"
+    t.boolean "would_recommend"
+    t.text "improvement_suggestion"
+    t.text "additional_comments"
+    t.datetime "submitted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["respondent_type", "respondent_id"], name: "index_csat_responses_on_respondent_type_and_respondent_id"
+    t.index ["submitted_at"], name: "index_csat_responses_on_submitted_at"
+    t.index ["token"], name: "index_csat_responses_on_token", unique: true
+    t.index ["user_id"], name: "index_csat_responses_on_user_id"
   end
 
   create_table "customers", force: :cascade do |t|
@@ -112,6 +131,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_12_000001) do
     t.datetime "updated_at", null: false
     t.boolean "active", default: true, null: false
     t.text "permissions"
+    t.string "otp_code"
+    t.datetime "otp_sent_at"
+    t.boolean "otp_enabled", default: false, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

@@ -1,11 +1,21 @@
 Rails.application.routes.draw do
-  devise_for :users
+  devise_for :users, controllers: { sessions: "users/sessions" }
+
+  devise_scope :user do
+    get  "users/verify_otp", to: "users/sessions#verify_otp", as: :verify_otp
+    post "users/confirm_otp", to: "users/sessions#confirm_otp", as: :confirm_otp
+    post "users/resend_otp", to: "users/sessions#resend_otp", as: :resend_otp
+  end
 
   # WhatsApp webhook — unauthenticated, must be outside Devise scope
   scope "webhooks" do
     get "whatsapp", to: "whatsapp_webhooks#verify"
     post "whatsapp", to: "whatsapp_webhooks#receive"
   end
+
+  # CSAT Feedback — public, token-authenticated
+  get  "feedback/:token", to: "feedback#show",   as: :feedback
+  post "feedback/:token", to: "feedback#submit", as: :submit_feedback
 
   get "up" => "rails/health#show", as: :rails_health_check
   root "dashboard#index"
@@ -78,6 +88,15 @@ Rails.application.routes.draw do
   resources :follow_ups, only: [:index, :new, :create, :destroy] do
     member do
       patch :cancel
+    end
+  end
+
+  resources :csat, only: [:index] do
+    collection do
+      post :generate_link
+    end
+    member do
+      get :agent
     end
   end
 end

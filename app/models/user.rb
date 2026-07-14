@@ -7,7 +7,8 @@ class User < ApplicationRecord
     leads:      "Leads",
     users:      "Users",
     roles:      "Roles & Privileges",
-    whatsapp:   "WhatsApp Marketing"
+    whatsapp:   "WhatsApp Marketing",
+    csat:       "CSAT Analytics"
   }.freeze
 
   serialize :permissions, coder: JSON
@@ -37,6 +38,7 @@ class User < ApplicationRecord
   has_many :whatsapp_messages
   has_many :whatsapp_templates
   has_many :follow_ups
+  has_many :csat_responses
 
   def super_admin?
     role&.name == "Super Admin"
@@ -58,6 +60,28 @@ class User < ApplicationRecord
     return true if super_admin?
 
     permissions&.dig(feature.to_s) != false
+  end
+
+  # --- OTP Methods ---
+
+  def generate_otp!
+    update!(otp_code: SecureRandom.random_number(10**6).to_s.rjust(6, "0"), otp_sent_at: Time.current)
+  end
+
+  def verify_otp(code)
+    otp_code.present? && code.to_s == otp_code && !otp_expired?
+  end
+
+  def clear_otp!
+    update!(otp_code: nil, otp_sent_at: nil)
+  end
+
+  def otp_expired?
+    otp_sent_at.blank? || otp_sent_at < 5.minutes.ago
+  end
+
+  def has_phone_for_otp?
+    phone.present?
   end
 
   def self.default_permissions

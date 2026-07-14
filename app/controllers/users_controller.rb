@@ -58,7 +58,7 @@ class UsersController < ApplicationController
   end
 
   def user_params
-    permitted = params.require(:user).permit(:name, :email, :phone, :role_id, :password, :password_confirmation, :active, permissions: {})
+    permitted = params.require(:user).permit(:name, :email, :phone, :role_id, :password, :password_confirmation, :active, :otp_enabled, permissions: {})
 
     if permitted[:permissions].present?
       permitted[:permissions] = permitted[:permissions].transform_values { |v| v == "1" }

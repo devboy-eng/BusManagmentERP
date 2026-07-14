@@ -18,7 +18,8 @@ class ApplicationController < ActionController::Base
     "whatsapp_settings"    => :whatsapp,
     "whatsapp_templates"   => :whatsapp,
     "follow_ups"           => :whatsapp,
-    "whatsapp_chats"       => :whatsapp
+    "whatsapp_chats"       => :whatsapp,
+    "csat"                 => :csat
   }.freeze
 
   private

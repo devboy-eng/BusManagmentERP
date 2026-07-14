@@ -50,6 +50,22 @@
     </div>
   <% end %>
 
+  <!-- WhatsApp OTP -->
+  <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3" data-controller="toggle">
+    <div>
+      <span class="text-xs font-medium text-gray-700">WhatsApp OTP Login</span>
+      <p class="text-[11px] text-gray-400 mt-0.5">Require OTP verification via WhatsApp on login</p>
+    </div>
+    <%= f.hidden_field :otp_enabled, value: "0" %>
+    <%= f.check_box :otp_enabled, { class: "hidden", data: { toggle_target: "checkbox" } }, "1", "0" %>
+    <button type="button" data-action="click->toggle#toggle"
+      class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 <%= user.otp_enabled? ? 'bg-indigo-600' : 'bg-gray-200' %>"
+      data-toggle-target="bg">
+      <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform <%= user.otp_enabled? ? 'translate-x-5' : 'translate-x-1' %>"
+        data-toggle-target="dot"></span>
+    </button>
+  </div>
+
   <!-- Feature Permissions -->
   <div>
     <label class="block text-xs font-medium text-gray-600 mb-3">Feature Permissions</label>
