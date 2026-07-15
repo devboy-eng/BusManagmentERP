@@ -92,6 +92,13 @@ Rails.application.routes.draw do
 
   resources :uploads, only: [:create]
 
+  resources :whatsapp_menus, except: [:show] do
+    member do
+      patch :toggle
+      post :send_menu
+    end
+  end
+
   resources :whatsapp_templates, except: [:show] do
     collection do
       post :sync_all

@@ -1,0 +1,94 @@
+<% content_for :page_title, "Interactive Menus" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900">Interactive Menus</h2>
+    <p class="text-xs text-gray-500 mt-1">WhatsApp list menus that pop up when triggered by a keyword</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <%= render "shared/guide_button", section: "menus" %>
+    <%= link_to new_whatsapp_menu_path, class: "inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition" do %>
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+      New Menu
+    <% end %>
+  </div>
+</div>
+
+<% if @menus.any? %>
+  <div class="space-y-4">
+    <% @menus.each do |menu| %>
+      <div class="rounded-xl border border-gray-200 bg-white p-5">
+        <div class="flex items-start justify-between">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <h3 class="text-sm font-semibold text-gray-900"><%= menu.name %></h3>
+              <% if menu.active? %>
+                <span class="inline-flex items-center rounded-full bg-green-50 border border-green-200 px-2 py-0.5 text-[10px] font-medium text-green-700">Active</span>
+              <% else %>
+                <span class="inline-flex items-center rounded-full bg-gray-100 border border-gray-200 px-2 py-0.5 text-[10px] font-medium text-gray-500">Inactive</span>
+              <% end %>
+            </div>
+            <p class="text-xs text-gray-500 truncate mb-2"><%= menu.body_text.truncate(100) %></p>
+
+            <div class="flex items-center gap-4 text-[11px] text-gray-400">
+              <% if menu.trigger_keywords.any? %>
+                <span class="inline-flex items-center gap-1">
+                  <svg class="h-3 w-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5l-3.6 19.5m-2.1-19.5l-3.6 19.5" /></svg>
+                  <span class="flex flex-wrap items-center gap-1">
+                    <% menu.trigger_keywords.each do |kw| %>
+                      <span class="inline-flex items-center rounded bg-gray-100 border border-gray-200 px-1.5 py-0 text-[10px] font-medium text-gray-600"><%= kw %></span>
+                    <% end %>
+                  </span>
+                </span>
+              <% end %>
+              <span class="inline-flex items-center gap-1">
+                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                <%= menu.parsed_menu_items.size %> item<%= menu.parsed_menu_items.size == 1 ? '' : 's' %>
+              </span>
+              <span>Button: "<%= menu.button_text %>"</span>
+            </div>
+
+            <%# Show menu items preview %>
+            <% items = menu.parsed_menu_items %>
+            <% if items.any? %>
+              <div class="mt-3 flex flex-wrap gap-1.5">
+                <% items.first(5).each do |item| %>
+                  <span class="inline-flex items-center rounded-md bg-indigo-50 border border-indigo-100 px-2 py-0.5 text-[11px] font-medium text-indigo-700"><%= item["title"] %></span>
+                <% end %>
+                <% if items.size > 5 %>
+                  <span class="text-[11px] text-gray-400">+<%= items.size - 5 %> more</span>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="flex items-center gap-1 ml-4 flex-shrink-0">
+            <%= link_to toggle_whatsapp_menu_path(menu), data: { turbo_method: :patch }, class: "h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition", title: menu.active? ? "Deactivate" : "Activate" do %>
+              <% if menu.active? %>
+                <svg class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" /></svg>
+              <% else %>
+                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" /></svg>
+              <% end %>
+            <% end %>
+            <%= link_to edit_whatsapp_menu_path(menu), class: "h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition", title: "Edit" do %>
+              <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+            <% end %>
+            <%= link_to whatsapp_menu_path(menu), data: { turbo_method: :delete, turbo_confirm: "Delete this menu?" }, class: "h-8 w-8 rounded-full hover:bg-red-50 flex items-center justify-center transition", title: "Delete" do %>
+              <svg class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="rounded-xl border border-gray-200 bg-white p-12 text-center">
+    <svg class="h-10 w-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+    <p class="text-sm font-medium text-gray-900 mb-1">No interactive menus</p>
+    <p class="text-xs text-gray-500 mb-4">Create a menu to send interactive list options via WhatsApp</p>
+    <%= link_to new_whatsapp_menu_path, class: "inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-500 transition" do %>
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+      Create First Menu
+    <% end %>
+  </div>
+<% end %>

@@ -171,6 +171,43 @@ class WhatsappService
     end
   end
 
+  def send_interactive_list(phone:, header: nil, body:, footer: nil, button_text: "Menu", sections:)
+    normalized = normalize_phone(phone)
+
+    interactive = {
+      type: "list",
+      body: { text: body },
+      action: {
+        button: button_text.truncate(20),
+        sections: sections
+      }
+    }
+    interactive[:header] = { type: "text", text: header } if header.present?
+    interactive[:footer] = { text: footer } if footer.present?
+
+    response = HTTParty.post(
+      "#{BASE_URL}/#{@phone_number_id}/messages",
+      headers: {
+        "Authorization" => "Bearer #{@access_token}",
+        "Content-Type" => "application/json"
+      },
+      body: {
+        messaging_product: "whatsapp",
+        to: normalized,
+        type: "interactive",
+        interactive: interactive
+      }.to_json
+    )
+
+    if response.success?
+      message_id = response.parsed_response.dig("messages", 0, "id")
+      { success: true, message_id: message_id }
+    else
+      error = response.parsed_response.dig("error", "message") || "Unknown API error"
+      { success: false, error: error }
+    end
+  end
+
   def download_media(media_id)
     # Step 1: Get media URL from Graph API
     response = HTTParty.get(

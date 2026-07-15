@@ -193,9 +193,13 @@ class WhatsappWebhooksController < ActionController::Base
     # Send read receipt so sender sees blue ticks
     send_read_receipt(whatsapp_id)
 
-    # Auto-reply check (only for text messages)
-    if msg_type == "text" && message_attrs[:body].present?
-      check_auto_reply(message_attrs[:body], conversation, sender_phone)
+    # Check if this is a menu item selection (list_reply)
+    if message_attrs[:_list_reply_id].present?
+      check_menu_reply(message_attrs[:_list_reply_id], conversation, sender_phone)
+    # Auto-reply + menu trigger check (for text messages)
+    elsif msg_type == "text" && message_attrs[:body].present?
+      check_menu_trigger(message_attrs[:body], conversation, sender_phone) ||
+        check_auto_reply(message_attrs[:body], conversation, sender_phone)
     end
   rescue => e
     Rails.logger.error "[WhatsApp Webhook] Error processing message #{msg["id"]}: #{e.class}: #{e.message}\n#{e.backtrace&.first(5)&.join("\n")}"
@@ -227,13 +231,14 @@ class WhatsappWebhooksController < ActionController::Base
         context_message_id: msg.dig("context", "id")
       }
     when "interactive"
-      # Interactive button/list replies
+      interactive_type = msg.dig("interactive", "type")
       reply = msg.dig("interactive", "button_reply") || msg.dig("interactive", "list_reply")
       return nil if reply.nil?
       {
         body: reply["title"],
         message_type: "button_reply",
-        context_message_id: msg.dig("context", "id")
+        context_message_id: msg.dig("context", "id"),
+        _list_reply_id: (interactive_type == "list_reply" ? reply["id"] : nil)
       }
     else
       nil
@@ -278,6 +283,76 @@ class WhatsappWebhooksController < ActionController::Base
   rescue => e
     Rails.logger.error "[WhatsApp Webhook] Failed to resolve media URL for #{media_id}: #{e.message}"
     nil
+  end
+
+  def check_menu_trigger(text, conversation, sender_phone)
+    menu = WhatsappMenu.find_by_trigger(text)
+    return false unless menu
+
+    service = WhatsappService.new
+    result = service.send_interactive_list(
+      phone: sender_phone,
+      header: menu.header_text,
+      body: menu.body_text,
+      footer: menu.footer_text,
+      button_text: menu.button_text,
+      sections: menu.api_sections
+    )
+
+    if result[:success]
+      # Build display body showing the menu was sent
+      display = "📋 #{menu.name}\n#{menu.body_text}"
+
+      reply_message = WhatsappMessage.create!(
+        recipient_phone: sender_phone,
+        message_body: display,
+        direction: "outgoing",
+        whatsapp_conversation: conversation,
+        whatsapp_message_id: result[:message_id],
+        status: :sent,
+        message_type: "text"
+      )
+
+      conversation.update_last_message!(reply_message)
+      broadcast_new_message(conversation, reply_message)
+      broadcast_conversation_update(conversation)
+    end
+
+    true
+  rescue => e
+    Rails.logger.error "[WhatsApp Webhook] Menu trigger error: #{e.class}: #{e.message}"
+    false
+  end
+
+  def check_menu_reply(item_id, conversation, sender_phone)
+    # Search all active menus for the item
+    WhatsappMenu.active.find_each do |menu|
+      reply_text = menu.reply_for_item(item_id)
+      next unless reply_text.present?
+
+      service = WhatsappService.new
+      result = service.send_text_message(phone: sender_phone, text: reply_text)
+
+      if result[:success]
+        reply_message = WhatsappMessage.create!(
+          recipient_phone: sender_phone,
+          message_body: reply_text,
+          direction: "outgoing",
+          whatsapp_conversation: conversation,
+          whatsapp_message_id: result[:message_id],
+          status: :sent,
+          message_type: "text"
+        )
+
+        conversation.update_last_message!(reply_message)
+        broadcast_new_message(conversation, reply_message)
+        broadcast_conversation_update(conversation)
+      end
+
+      return
+    end
+  rescue => e
+    Rails.logger.error "[WhatsApp Webhook] Menu reply error: #{e.class}: #{e.message}"
   end
 
   def check_auto_reply(text, conversation, sender_phone)

@@ -23,6 +23,7 @@ class ApplicationController < ActionController::Base
     "auto_reply_rules"     => :whatsapp,
     "scheduled_messages"   => :whatsapp,
     "whatsapp_guide"       => :whatsapp,
+    "whatsapp_menus"       => :whatsapp,
     "csat"                 => :csat
   }.freeze
 

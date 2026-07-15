@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_14_100000) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_15_100000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -313,6 +313,22 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_14_100000) do
     t.index ["contact_phone"], name: "index_whatsapp_conversations_on_contact_phone", unique: true
     t.index ["contact_type", "contact_id"], name: "index_whatsapp_conversations_on_contact_type_and_contact_id"
     t.index ["last_message_at"], name: "index_whatsapp_conversations_on_last_message_at"
+  end
+
+  create_table "whatsapp_menus", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "header_text"
+    t.text "body_text", null: false
+    t.string "footer_text"
+    t.string "button_text", default: "Menu"
+    t.text "menu_items"
+    t.string "trigger_keyword"
+    t.boolean "active", default: true
+    t.integer "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_whatsapp_menus_on_active"
+    t.index ["trigger_keyword"], name: "index_whatsapp_menus_on_trigger_keyword"
   end
 
   create_table "whatsapp_messages", force: :cascade do |t|

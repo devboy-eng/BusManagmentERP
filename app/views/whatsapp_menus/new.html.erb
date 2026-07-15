@@ -1,0 +1,15 @@
+<% content_for :page_title, "New Interactive Menu" %>
+
+<div class="max-w-2xl">
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h2 class="text-lg font-semibold text-gray-900">New Interactive Menu</h2>
+      <p class="text-xs text-gray-500 mt-1">Create a WhatsApp list menu triggered by a keyword</p>
+    </div>
+    <%= render "shared/guide_button", section: "menus" %>
+  </div>
+
+  <div class="rounded-xl border border-gray-200 bg-white p-6">
+    <%= render "form", menu: @menu %>
+  </div>
+</div>
