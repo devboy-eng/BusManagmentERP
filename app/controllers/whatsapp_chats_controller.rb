@@ -19,11 +19,11 @@ class WhatsappChatsController < ApplicationController
       format.html { render :index }
       format.turbo_stream do
         render turbo_stream: [
-          turbo_stream.replace("chat-area",
+          turbo_stream.update("chat-area",
             partial: "whatsapp_chats/chat_area",
             locals: { conversation: @conversation, messages: @messages }
           ),
-          turbo_stream.replace("conversation-list",
+          turbo_stream.update("conversation-list",
             partial: "whatsapp_chats/conversation_list",
             locals: { conversations: @conversations, selected: @conversation }
           )
