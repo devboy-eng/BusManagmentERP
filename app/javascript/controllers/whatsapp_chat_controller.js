@@ -34,6 +34,19 @@ export default class extends Controller {
     if (this.consumer) this.consumer.disconnect()
   }
 
+  // Re-initialize when messages target is replaced (e.g. after assign/unassign turbo_stream update)
+  messagesTargetConnected() {
+    this.scrollToBottom()
+    if (this.observer) this.observer.disconnect()
+    this.observeNewMessages()
+
+    const conversationId = this.messagesTarget?.dataset?.conversationId
+    if (conversationId && conversationId !== this.currentConversationId) {
+      this.currentConversationId = conversationId
+      this.subscribeToConversation(conversationId)
+    }
+  }
+
   subscribeToConversation(conversationId) {
     if (this.conversationSubscription) this.conversationSubscription.unsubscribe()
 

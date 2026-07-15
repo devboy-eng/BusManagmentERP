@@ -184,12 +184,46 @@ class WhatsappChatsController < ApplicationController
   def assign
     user = User.find(params[:user_id])
     @conversation.update!(assigned_user: user)
-    redirect_to whatsapp_chat_path(@conversation), notice: "Conversation assigned to #{user.name}", status: :see_other
+
+    respond_to do |format|
+      format.turbo_stream do
+        @messages = @conversation.whatsapp_messages.chronological
+        @conversations = WhatsappConversation.ordered
+        render turbo_stream: [
+          turbo_stream.update("chat-area",
+            partial: "whatsapp_chats/chat_area",
+            locals: { conversation: @conversation, messages: @messages }
+          ),
+          turbo_stream.update("conversation-list",
+            partial: "whatsapp_chats/conversation_list",
+            locals: { conversations: @conversations, selected: @conversation }
+          )
+        ]
+      end
+      format.html { redirect_to whatsapp_chat_path(@conversation), notice: "Conversation assigned to #{user.name}", status: :see_other }
+    end
   end
 
   def unassign
     @conversation.update!(assigned_user: nil)
-    redirect_to whatsapp_chat_path(@conversation), notice: "Conversation unassigned", status: :see_other
+
+    respond_to do |format|
+      format.turbo_stream do
+        @messages = @conversation.whatsapp_messages.chronological
+        @conversations = WhatsappConversation.ordered
+        render turbo_stream: [
+          turbo_stream.update("chat-area",
+            partial: "whatsapp_chats/chat_area",
+            locals: { conversation: @conversation, messages: @messages }
+          ),
+          turbo_stream.update("conversation-list",
+            partial: "whatsapp_chats/conversation_list",
+            locals: { conversations: @conversations, selected: @conversation }
+          )
+        ]
+      end
+      format.html { redirect_to whatsapp_chat_path(@conversation), notice: "Conversation unassigned", status: :see_other }
+    end
   end
 
   def schedule_message
