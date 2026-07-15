@@ -1,6 +1,78 @@
+<% return if message.reaction? %>
 <div class="flex <%= message.incoming? ? 'justify-start' : 'justify-end' %>" id="message-<%= message.id %>" data-message-id="<%= message.id %>">
-  <div class="max-w-[70%] rounded-lg px-3 py-2 shadow-sm <%= message.incoming? ? 'bg-white text-gray-900' : 'bg-green-500 text-white' %>">
-    <p class="text-xs whitespace-pre-wrap break-words"><%= message.message_body %></p>
+  <div class="max-w-[70%] rounded-lg px-3 py-2 shadow-sm <%= message.incoming? ? 'bg-white text-gray-900' : 'bg-green-500 text-white' %>" data-controller="message-reaction" data-message-reaction-message-id-value="<%= message.id %>" data-message-reaction-conversation-id-value="<%= message.whatsapp_conversation_id %>">
+
+    <% case message.message_type %>
+    <% when "image" %>
+      <% if message.media_url.present? %>
+        <img src="<%= message.media_url %>" alt="Image" class="rounded-md max-w-full max-h-64 mb-1 cursor-pointer" loading="lazy" onclick="window.open(this.src, '_blank')">
+      <% end %>
+      <% if message.media_caption.present? %>
+        <p class="text-xs whitespace-pre-wrap break-words mt-1"><%= message.media_caption %></p>
+      <% end %>
+
+    <% when "video" %>
+      <% if message.media_url.present? %>
+        <video controls class="rounded-md max-w-full max-h-64 mb-1" preload="metadata">
+          <source src="<%= message.media_url %>" type="<%= message.media_mime_type || 'video/mp4' %>">
+          Your browser does not support video playback.
+        </video>
+      <% end %>
+      <% if message.media_caption.present? %>
+        <p class="text-xs whitespace-pre-wrap break-words mt-1"><%= message.media_caption %></p>
+      <% end %>
+
+    <% when "audio" %>
+      <% if message.media_url.present? %>
+        <audio controls class="max-w-full mb-1" preload="metadata">
+          <source src="<%= message.media_url %>" type="<%= message.media_mime_type || 'audio/ogg' %>">
+          Your browser does not support audio playback.
+        </audio>
+      <% end %>
+
+    <% when "document" %>
+      <div class="flex items-center gap-2 mb-1">
+        <svg class="h-8 w-8 flex-shrink-0 <%= message.incoming? ? 'text-gray-400' : 'text-green-100' %>" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+        </svg>
+        <div class="min-w-0">
+          <% if message.media_url.present? %>
+            <a href="<%= message.media_url %>" target="_blank" class="text-xs font-medium underline break-all"><%= message.media_filename || "Document" %></a>
+          <% else %>
+            <p class="text-xs font-medium"><%= message.media_filename || "Document" %></p>
+          <% end %>
+          <% if message.media_mime_type.present? %>
+            <p class="text-[10px] <%= message.incoming? ? 'text-gray-400' : 'text-green-100' %>"><%= message.media_mime_type %></p>
+          <% end %>
+        </div>
+      </div>
+      <% if message.media_caption.present? %>
+        <p class="text-xs whitespace-pre-wrap break-words mt-1"><%= message.media_caption %></p>
+      <% end %>
+
+    <% when "button_reply" %>
+      <div class="flex items-center gap-1.5 mb-1">
+        <svg class="h-3.5 w-3.5 flex-shrink-0 <%= message.incoming? ? 'text-blue-500' : 'text-green-100' %>" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
+        </svg>
+        <p class="text-xs font-medium"><%= message.message_body %></p>
+      </div>
+
+    <% else %>
+      <% # text (default) %>
+      <p class="text-xs whitespace-pre-wrap break-words"><%= message.message_body %></p>
+    <% end %>
+
+    <%# Reaction emojis on this message %>
+    <% reactions = message.whatsapp_conversation&.whatsapp_messages&.where(message_type: "reaction", context_message_id: message.whatsapp_message_id) if message.whatsapp_message_id.present? %>
+    <% if reactions&.any? %>
+      <div class="flex items-center gap-0.5 mt-1">
+        <% reactions.each do |r| %>
+          <span class="text-sm" title="<%= r.incoming? ? 'From contact' : 'From you' %>"><%= r.reaction_emoji %></span>
+        <% end %>
+      </div>
+    <% end %>
+
     <div class="flex items-center justify-end gap-1 mt-1">
       <span class="text-[10px] <%= message.incoming? ? 'text-gray-400' : 'text-green-100' %>">
         <%= message.created_at.strftime("%I:%M %p") %>
@@ -22,5 +94,16 @@
         </span>
       <% end %>
     </div>
+
+    <%# Reaction button %>
+    <% if message.whatsapp_message_id.present? && !message.reaction? %>
+      <button class="absolute -bottom-2 -right-2 hidden group-hover:flex h-5 w-5 items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-xs cursor-pointer hover:bg-gray-50"
+              data-action="click->message-reaction#showPicker"
+              title="React">
+        <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
+        </svg>
+      </button>
+    <% end %>
   </div>
 </div>

@@ -1,0 +1,90 @@
+<div class="space-y-5">
+  <div>
+    <h4 class="text-sm font-semibold text-gray-900 mb-1">Message Templates</h4>
+    <p class="text-xs text-gray-500 leading-relaxed">Create and manage reusable message templates for WhatsApp. Templates must be approved by Meta before they can be sent to customers.</p>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">How to Use</h5>
+    <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+      <li><strong>Create Template:</strong> Click "New Template" to create a template with name, body, header, footer, and buttons</li>
+      <li><strong>Sync to Meta:</strong> After creating locally, click "Sync to Meta" to submit for approval (reviewed within 24 hours)</li>
+      <li><strong>Sync from Meta:</strong> Click "Sync from Meta" to pull templates from your WhatsApp Business Account</li>
+      <li><strong>Refresh Status:</strong> Click "Refresh Status" on a synced template to check its approval status</li>
+      <li><strong>Preview:</strong> Click "Preview" to see how the template looks to recipients</li>
+      <li><strong>Insights:</strong> Click "Insights" to see analytics (sent, delivered, read counts)</li>
+    </ul>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">Template Types</h5>
+    <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+      <li><strong>Standard:</strong> A simple template with optional header (text/image/video/document), body, footer, and action buttons</li>
+      <li><strong>Carousel:</strong> Multiple swipeable cards, each with its own image, body text, and buttons — great for showcasing products</li>
+    </ul>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">Template Statuses</h5>
+    <div class="space-y-2">
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-yellow-50 border border-yellow-200 px-2.5 py-0.5 text-[11px] font-medium text-yellow-700 flex-shrink-0 mt-0.5">Pending</span>
+        <span class="text-xs text-gray-600">Submitted to Meta, awaiting review</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-green-50 border border-green-200 px-2.5 py-0.5 text-[11px] font-medium text-green-700 flex-shrink-0 mt-0.5">Approved</span>
+        <span class="text-xs text-gray-600">Ready to use for sending messages</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[11px] font-medium text-red-700 flex-shrink-0 mt-0.5">Rejected</span>
+        <span class="text-xs text-gray-600">Did not pass Meta's review — edit and resubmit</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-orange-50 border border-orange-200 px-2.5 py-0.5 text-[11px] font-medium text-orange-700 flex-shrink-0 mt-0.5">Paused</span>
+        <span class="text-xs text-gray-600">Temporarily disabled by Meta due to quality issues</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-[11px] font-medium text-gray-600 flex-shrink-0 mt-0.5">Disabled</span>
+        <span class="text-xs text-gray-600">Permanently disabled — cannot be reactivated</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-blue-50 border border-blue-200 px-2.5 py-0.5 text-[11px] font-medium text-blue-700 flex-shrink-0 mt-0.5">Draft</span>
+        <span class="text-xs text-gray-600">Created locally, not yet submitted to Meta</span>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">Rules & Regulations</h5>
+    <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+      <li><strong>Naming:</strong> Template names can only contain lowercase letters, numbers, and underscores</li>
+      <li><strong>Variables:</strong> Use {{1}}, {{2}}, etc. for dynamic content. Each variable must have a sample value when submitting.</li>
+      <li><strong>Categories:</strong> Templates must be categorised as Marketing, Utility, or Authentication</li>
+      <li><strong>Language:</strong> Each template is tied to a specific language. Create separate templates per language.</li>
+      <li><strong>Approval:</strong> Meta reviews templates for policy compliance. Rejected ones can be edited and resubmitted.</li>
+      <li><strong>Limits:</strong> Maximum of 250 templates per WhatsApp Business Account</li>
+    </ul>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-red-700 mb-2">Common Errors</h5>
+    <div class="space-y-2">
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"Template name already exists"</p>
+        <p class="text-[11px] text-red-600 mt-1">Each name must be unique within your Business Account. Use a different name or delete the existing template.</p>
+      </div>
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"Template rejected by Meta"</p>
+        <p class="text-[11px] text-red-600 mt-1">Common reasons: prohibited content, misleading text, missing opt-out language, or too many variables.</p>
+      </div>
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"Sync failed"</p>
+        <p class="text-[11px] text-red-600 mt-1">Check that your Access Token and Business Account ID are correct in Settings.</p>
+      </div>
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"Cannot delete from Meta"</p>
+        <p class="text-[11px] text-red-600 mt-1">Templates in "Pending" status cannot be deleted. Wait for approval/rejection, then delete.</p>
+      </div>
+    </div>
+  </div>
+</div>

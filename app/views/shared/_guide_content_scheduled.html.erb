@@ -1,0 +1,73 @@
+<div class="space-y-5">
+  <div>
+    <h4 class="text-sm font-semibold text-gray-900 mb-1">Scheduled Messages</h4>
+    <p class="text-xs text-gray-500 leading-relaxed">Schedule messages to be sent automatically at a specific date and time. Useful for reminders, follow-ups, or sending during business hours when you're away.</p>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">How to Schedule</h5>
+    <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+      <li>Open a conversation in the chat</li>
+      <li>Click the <strong>clock icon</strong> next to the send button</li>
+      <li>Enter your message and select the desired date and time</li>
+      <li>Click <strong>Schedule</strong> to save</li>
+      <li>The message will be sent automatically when the scheduled time arrives</li>
+      <li>View all scheduled messages from <strong>WhatsApp > Scheduled Messages</strong> in the sidebar</li>
+    </ul>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">Message Statuses</h5>
+    <div class="space-y-2">
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-yellow-50 border border-yellow-200 px-2.5 py-0.5 text-[11px] font-medium text-yellow-700 flex-shrink-0 mt-0.5">Pending</span>
+        <span class="text-xs text-gray-600">Waiting to be sent at the scheduled time</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-green-50 border border-green-200 px-2.5 py-0.5 text-[11px] font-medium text-green-700 flex-shrink-0 mt-0.5">Sent</span>
+        <span class="text-xs text-gray-600">Successfully delivered via WhatsApp</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[11px] font-medium text-red-700 flex-shrink-0 mt-0.5">Failed</span>
+        <span class="text-xs text-gray-600">Could not be delivered — see error message for details</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-[11px] font-medium text-gray-600 flex-shrink-0 mt-0.5">Cancelled</span>
+        <span class="text-xs text-gray-600">Manually cancelled before the scheduled time</span>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">Rules & Limits</h5>
+    <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+      <li>The scheduled time <strong>must be in the future</strong> when creating</li>
+      <li>Messages are processed every <strong>1 minute</strong> by the background job</li>
+      <li>Only <strong>pending</strong> messages can be cancelled</li>
+      <li>The 24-hour reply window rule still applies — if expired before the scheduled time, the message may fail</li>
+      <li>Scheduled messages use the same WhatsApp API quota as regular messages</li>
+    </ul>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-red-700 mb-2">Common Errors</h5>
+    <div class="space-y-2">
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"Scheduled at must be in the future"</p>
+        <p class="text-[11px] text-red-600 mt-1">You cannot schedule a message for a past date or time. Select a future date/time.</p>
+      </div>
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"Message body can't be blank"</p>
+        <p class="text-[11px] text-red-600 mt-1">You must enter a message to schedule. Empty messages cannot be sent.</p>
+      </div>
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"Only pending messages can be cancelled"</p>
+        <p class="text-[11px] text-red-600 mt-1">Once a message has been sent, failed, or already cancelled, it cannot be cancelled again.</p>
+      </div>
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">Scheduled message shows "Failed"</p>
+        <p class="text-[11px] text-red-600 mt-1">Common reasons: API not configured, 24-hour reply window expired, or invalid phone number.</p>
+      </div>
+    </div>
+  </div>
+</div>

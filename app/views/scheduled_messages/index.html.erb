@@ -1,0 +1,62 @@
+<% content_for :page_title, "Scheduled Messages" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900">Scheduled Messages</h2>
+    <p class="text-xs text-gray-500 mt-1">Messages scheduled to be sent at a specific time</p>
+  </div>
+  <%= render "shared/guide_button", section: "scheduled" %>
+</div>
+
+<div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+  <% if @scheduled_messages.any? %>
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead>
+        <tr class="bg-gray-50">
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Conversation</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Message</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Scheduled At</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Status</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Created By</th>
+          <th class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @scheduled_messages.each do |sm| %>
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-4 py-3">
+              <% if sm.whatsapp_conversation %>
+                <p class="text-xs font-medium text-gray-900"><%= sm.whatsapp_conversation.display_name %></p>
+                <p class="text-[11px] text-gray-400"><%= sm.whatsapp_conversation.contact_phone %></p>
+              <% else %>
+                <span class="text-[11px] text-gray-400">--</span>
+              <% end %>
+            </td>
+            <td class="px-4 py-3 text-xs text-gray-500 max-w-xs truncate"><%= truncate(sm.message_body, length: 60) %></td>
+            <td class="px-4 py-3 text-xs text-gray-500"><%= sm.scheduled_at.strftime("%d %b %Y, %I:%M %p") %></td>
+            <td class="px-4 py-3">
+              <%= follow_up_status_badge(sm.status) %>
+              <% if sm.failed? && sm.error_message.present? %>
+                <p class="text-[11px] text-red-500 mt-1"><%= truncate(sm.error_message, length: 40) %></p>
+              <% end %>
+            </td>
+            <td class="px-4 py-3 text-xs text-gray-500"><%= sm.user&.name || "--" %></td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <% if sm.pending? %>
+                  <%= link_to cancel_scheduled_message_path(sm), data: { turbo_method: :patch, turbo_confirm: "Cancel this scheduled message?" }, class: "text-yellow-600 hover:text-yellow-500 text-xs" do %>Cancel<% end %>
+                <% end %>
+                <%= link_to scheduled_message_path(sm), data: { turbo_method: :delete, turbo_confirm: "Delete this scheduled message?" }, class: "text-red-600 hover:text-red-500 text-xs" do %>Delete<% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-xs text-gray-500">No scheduled messages.</p>
+      <p class="text-xs text-gray-400 mt-1">Schedule messages from the chat interface using the clock icon.</p>
+    </div>
+  <% end %>
+</div>

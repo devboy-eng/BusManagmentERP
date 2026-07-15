@@ -19,6 +19,10 @@ class ApplicationController < ActionController::Base
     "whatsapp_templates"   => :whatsapp,
     "follow_ups"           => :whatsapp,
     "whatsapp_chats"       => :whatsapp,
+    "quick_responses"      => :whatsapp,
+    "auto_reply_rules"     => :whatsapp,
+    "scheduled_messages"   => :whatsapp,
+    "whatsapp_guide"       => :whatsapp,
     "csat"                 => :csat
   }.freeze
 

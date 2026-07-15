@@ -9,11 +9,18 @@
                     else 'bg-gray-400'
                     end %>
   <% show_initial = conversation.display_name.present? && conversation.display_name.first&.match?(/[a-zA-Z]/) %>
-  <div class="h-10 w-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-semibold text-white <%= avatar_color %>">
-    <% if show_initial %>
-      <%= conversation.display_name.first.upcase %>
-    <% else %>
-      <svg class="h-5 w-5 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v1.2c0 .7.5 1.2 1.2 1.2h16.8c.7 0 1.2-.5 1.2-1.2v-1.2c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+  <div class="relative">
+    <div class="h-10 w-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-semibold text-white <%= avatar_color %>">
+      <% if show_initial %>
+        <%= conversation.display_name.first.upcase %>
+      <% else %>
+        <svg class="h-5 w-5 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v1.2c0 .7.5 1.2 1.2 1.2h16.8c.7 0 1.2-.5 1.2-1.2v-1.2c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      <% end %>
+    </div>
+    <% if conversation.assigned? %>
+      <span class="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-indigo-500 border-2 border-white flex items-center justify-center text-[8px] font-bold text-white" title="Assigned to <%= conversation.assigned_user&.name %>">
+        <%= conversation.assigned_user&.name&.first&.upcase %>
+      </span>
     <% end %>
   </div>
 

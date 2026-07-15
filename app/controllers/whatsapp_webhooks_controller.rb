@@ -120,9 +120,11 @@ class WhatsappWebhooksController < ActionController::Base
   end
 
   def process_single_incoming_message(msg, contacts)
-    Rails.logger.info "[WhatsApp Webhook] Processing message type=#{msg["type"]} id=#{msg["id"]} from=#{msg["from"]}"
+    msg_type = msg["type"]
+    Rails.logger.info "[WhatsApp Webhook] Processing message type=#{msg_type} id=#{msg["id"]} from=#{msg["from"]}"
 
-    return unless msg["type"] == "text"
+    supported_types = %w[text image video audio document reaction button interactive]
+    return unless msg_type.in?(supported_types)
 
     whatsapp_id = msg["id"]
     return if whatsapp_id.blank?
@@ -134,8 +136,7 @@ class WhatsappWebhooksController < ActionController::Base
     end
 
     sender_phone = msg["from"]
-    text_body = msg.dig("text", "body")
-    return if sender_phone.blank? || text_body.blank?
+    return if sender_phone.blank?
 
     # Get contact name from webhook payload
     contact_info = contacts&.find { |c| c["wa_id"] == sender_phone }
@@ -151,19 +152,35 @@ class WhatsappWebhooksController < ActionController::Base
       contact: contact
     )
 
+    # Handle reaction messages separately (they don't create a new bubble, they annotate an existing message)
+    if msg_type == "reaction"
+      process_reaction(msg, conversation, sender_phone, sender_name, contact, whatsapp_id)
+      return
+    end
+
+    # Extract message content based on type
+    message_attrs = extract_message_attrs(msg, msg_type)
+    return if message_attrs.nil?
+
     # Create incoming message
     message = WhatsappMessage.create!(
       recipient_phone: sender_phone,
       recipient_name: sender_name || contact&.name,
       recipient: contact,
-      message_body: text_body,
+      message_body: message_attrs[:body],
+      message_type: message_attrs[:message_type],
+      media_url: message_attrs[:media_url],
+      media_mime_type: message_attrs[:media_mime_type],
+      media_filename: message_attrs[:media_filename],
+      media_caption: message_attrs[:media_caption],
+      context_message_id: message_attrs[:context_message_id],
       direction: "incoming",
       whatsapp_conversation: conversation,
       whatsapp_message_id: whatsapp_id,
       status: :delivered
     )
 
-    Rails.logger.info "[WhatsApp Webhook] Created incoming message #{message.id} in conversation #{conversation.id}"
+    Rails.logger.info "[WhatsApp Webhook] Created incoming message #{message.id} (type=#{message_attrs[:message_type]}) in conversation #{conversation.id}"
 
     # Update conversation
     conversation.update_last_message!(message)
@@ -175,8 +192,118 @@ class WhatsappWebhooksController < ActionController::Base
 
     # Send read receipt so sender sees blue ticks
     send_read_receipt(whatsapp_id)
+
+    # Auto-reply check (only for text messages)
+    if msg_type == "text" && message_attrs[:body].present?
+      check_auto_reply(message_attrs[:body], conversation, sender_phone)
+    end
   rescue => e
     Rails.logger.error "[WhatsApp Webhook] Error processing message #{msg["id"]}: #{e.class}: #{e.message}\n#{e.backtrace&.first(5)&.join("\n")}"
+  end
+
+  def extract_message_attrs(msg, msg_type)
+    case msg_type
+    when "text"
+      body = msg.dig("text", "body")
+      return nil if body.blank?
+      { body: body, message_type: "text" }
+    when "image", "video", "audio", "document"
+      media_data = msg[msg_type] || {}
+      media_url = resolve_media_url(media_data["id"])
+      {
+        body: media_data["caption"],
+        message_type: msg_type,
+        media_url: media_url,
+        media_mime_type: media_data["mime_type"],
+        media_filename: media_data["filename"],
+        media_caption: media_data["caption"]
+      }
+    when "button"
+      button_text = msg.dig("button", "text")
+      return nil if button_text.blank?
+      {
+        body: button_text,
+        message_type: "button_reply",
+        context_message_id: msg.dig("context", "id")
+      }
+    when "interactive"
+      # Interactive button/list replies
+      reply = msg.dig("interactive", "button_reply") || msg.dig("interactive", "list_reply")
+      return nil if reply.nil?
+      {
+        body: reply["title"],
+        message_type: "button_reply",
+        context_message_id: msg.dig("context", "id")
+      }
+    else
+      nil
+    end
+  end
+
+  def process_reaction(msg, conversation, sender_phone, sender_name, contact, whatsapp_id)
+    reaction_data = msg["reaction"] || {}
+    target_message_id = reaction_data["message_id"]
+    emoji = reaction_data["emoji"]
+
+    return if target_message_id.blank?
+
+    # Find the target message
+    target_message = WhatsappMessage.find_by(whatsapp_message_id: target_message_id)
+
+    # Create a reaction message record
+    message = WhatsappMessage.create!(
+      recipient_phone: sender_phone,
+      recipient_name: sender_name || contact&.name,
+      recipient: contact,
+      message_type: "reaction",
+      reaction_emoji: emoji,
+      context_message_id: target_message_id,
+      direction: "incoming",
+      whatsapp_conversation: conversation,
+      whatsapp_message_id: whatsapp_id,
+      status: :delivered
+    )
+
+    # Broadcast to chat UI
+    broadcast_new_message(conversation, message)
+  rescue => e
+    Rails.logger.error "[WhatsApp Webhook] Error processing reaction: #{e.class}: #{e.message}"
+  end
+
+  def resolve_media_url(media_id)
+    return nil if media_id.blank?
+    service = WhatsappService.new
+    result = service.download_media(media_id)
+    result&.dig(:url)
+  rescue => e
+    Rails.logger.error "[WhatsApp Webhook] Failed to resolve media URL for #{media_id}: #{e.message}"
+    nil
+  end
+
+  def check_auto_reply(text, conversation, sender_phone)
+    rule = AutoReplyRule.match_incoming(text, conversation)
+    return unless rule
+
+    service = WhatsappService.new
+    result = service.send_text_message(phone: sender_phone, text: rule.reply_body)
+
+    if result[:success]
+      reply_message = WhatsappMessage.create!(
+        recipient_phone: sender_phone,
+        message_body: rule.reply_body,
+        direction: "outgoing",
+        whatsapp_conversation: conversation,
+        whatsapp_message_id: result[:message_id],
+        status: :sent,
+        message_type: "text"
+      )
+
+      conversation.update_last_message!(reply_message)
+      broadcast_new_message(conversation, reply_message)
+      broadcast_conversation_update(conversation)
+    end
+  rescue => e
+    Rails.logger.error "[WhatsApp Webhook] Auto-reply error: #{e.class}: #{e.message}"
   end
 
   def broadcast_new_message(conversation, message)

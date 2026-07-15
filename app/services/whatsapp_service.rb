@@ -72,6 +72,121 @@ class WhatsappService
     { record: msg_record, result: result }
   end
 
+  def send_media_message(phone:, type:, media_url:, caption: nil, filename: nil)
+    normalized = normalize_phone(phone)
+
+    media_object = { link: media_url }
+    media_object[:caption] = caption if caption.present? && type.in?(%w[image video document])
+    media_object[:filename] = filename if filename.present? && type == "document"
+
+    response = HTTParty.post(
+      "#{BASE_URL}/#{@phone_number_id}/messages",
+      headers: {
+        "Authorization" => "Bearer #{@access_token}",
+        "Content-Type" => "application/json"
+      },
+      body: {
+        messaging_product: "whatsapp",
+        to: normalized,
+        type: type,
+        type => media_object
+      }.to_json
+    )
+
+    if response.success?
+      message_id = response.parsed_response.dig("messages", 0, "id")
+      { success: true, message_id: message_id }
+    else
+      error = response.parsed_response.dig("error", "message") || "Unknown API error"
+      { success: false, error: error }
+    end
+  end
+
+  def send_and_log_media(recipient:, type:, media_url:, caption: nil, filename: nil, user:)
+    conversation = WhatsappConversation.find_or_start(
+      phone: recipient.phone,
+      name: recipient.name,
+      contact: recipient
+    )
+
+    mime_type = Rack::Mime.mime_type(File.extname(media_url.to_s), "application/octet-stream")
+
+    msg_record = WhatsappMessage.create!(
+      recipient: recipient,
+      recipient_name: recipient.name,
+      recipient_phone: recipient.phone,
+      message_body: caption,
+      message_type: type,
+      media_url: media_url,
+      media_mime_type: mime_type,
+      media_filename: filename,
+      media_caption: caption,
+      user: user,
+      status: :queued,
+      direction: "outgoing",
+      whatsapp_conversation: conversation
+    )
+
+    result = send_media_message(phone: recipient.phone, type: type, media_url: media_url, caption: caption, filename: filename)
+
+    if result[:success]
+      msg_record.update!(status: :sent, whatsapp_message_id: result[:message_id])
+    else
+      msg_record.update!(status: :failed, error_message: result[:error])
+    end
+
+    conversation.update_last_message!(msg_record)
+    broadcast_new_message(conversation, msg_record)
+    broadcast_conversation_update(conversation)
+
+    { record: msg_record, result: result }
+  end
+
+  def send_reaction(phone:, message_id:, emoji:)
+    normalized = normalize_phone(phone)
+
+    response = HTTParty.post(
+      "#{BASE_URL}/#{@phone_number_id}/messages",
+      headers: {
+        "Authorization" => "Bearer #{@access_token}",
+        "Content-Type" => "application/json"
+      },
+      body: {
+        messaging_product: "whatsapp",
+        to: normalized,
+        type: "reaction",
+        reaction: {
+          message_id: message_id,
+          emoji: emoji
+        }
+      }.to_json
+    )
+
+    if response.success?
+      api_message_id = response.parsed_response.dig("messages", 0, "id")
+      { success: true, message_id: api_message_id }
+    else
+      error = response.parsed_response.dig("error", "message") || "Unknown API error"
+      { success: false, error: error }
+    end
+  end
+
+  def download_media(media_id)
+    # Step 1: Get media URL from Graph API
+    response = HTTParty.get(
+      "#{BASE_URL}/#{media_id}",
+      headers: { "Authorization" => "Bearer #{@access_token}" }
+    )
+
+    return nil unless response.success?
+
+    media_url = response.parsed_response["url"]
+    mime_type = response.parsed_response["mime_type"]
+    return nil unless media_url.present?
+
+    { url: media_url, mime_type: mime_type }
+  end
+
   def test_connection
     response = HTTParty.get(
       "#{BASE_URL}/#{@phone_number_id}",

@@ -1,0 +1,58 @@
+<% content_for :page_title, "Quick Responses" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900">Quick Responses</h2>
+    <p class="text-xs text-gray-500 mt-1">Pre-saved replies for fast WhatsApp messaging</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <%= render "shared/guide_button", section: "quick_responses" %>
+    <%= link_to new_quick_response_path, class: "inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition" do %>
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+      New Quick Response
+    <% end %>
+  </div>
+</div>
+
+<div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+  <% if @quick_responses.any? %>
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead>
+        <tr class="bg-gray-50">
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Title</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Shortcode</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Body</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Uses</th>
+          <th class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @quick_responses.each do |qr| %>
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-4 py-3 text-xs font-medium text-gray-900"><%= qr.title %></td>
+            <td class="px-4 py-3">
+              <% if qr.shortcode.present? %>
+                <span class="inline-flex items-center rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[11px] font-medium text-indigo-700"><%= qr.shortcode %></span>
+              <% else %>
+                <span class="text-[11px] text-gray-400">--</span>
+              <% end %>
+            </td>
+            <td class="px-4 py-3 text-xs text-gray-500 max-w-xs truncate"><%= truncate(qr.body, length: 60) %></td>
+            <td class="px-4 py-3 text-xs text-gray-500"><%= qr.usage_count %></td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <%= link_to "Edit", edit_quick_response_path(qr), class: "text-indigo-600 hover:text-indigo-500 text-xs" %>
+                <%= link_to "Delete", quick_response_path(qr), data: { turbo_method: :delete, turbo_confirm: "Delete this quick response?" }, class: "text-red-600 hover:text-red-500 text-xs" %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-xs text-gray-500">No quick responses yet.</p>
+      <p class="text-xs text-gray-400 mt-1"><%= link_to "Create one", new_quick_response_path, class: "text-indigo-600 hover:text-indigo-500" %> to speed up your messaging.</p>
+    </div>
+  <% end %>
+</div>

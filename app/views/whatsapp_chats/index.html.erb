@@ -4,12 +4,34 @@
   <!-- Conversation List (Left Panel) -->
   <div class="w-80 border-r border-gray-200 bg-white flex flex-col flex-shrink-0">
     <!-- Search -->
-    <div class="p-3 border-b border-gray-200">
+    <div class="p-3 border-b border-gray-200 space-y-2">
       <input type="text"
-             placeholder="Search conversations..."
+             placeholder="Filter conversations..."
              class="w-full rounded-lg border border-gray-300 px-3 py-2 text-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
              data-whatsapp-chat-target="search"
              data-action="input->whatsapp-chat#filterConversations">
+      <div class="flex items-center gap-1">
+        <button class="flex-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-500 hover:bg-gray-100 transition" data-action="click->whatsapp-chat#searchAllMessages" title="Search across all message content">
+          <svg class="h-3 w-3 inline mr-1" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+          Search Messages
+        </button>
+        <%= render "shared/guide_button", section: "chat", compact: true %>
+      </div>
+    </div>
+
+    <%# Global message search results (hidden by default) %>
+    <div id="global-search-panel" class="hidden border-b border-gray-200 bg-gray-50" data-whatsapp-chat-target="globalSearchPanel">
+      <div class="p-3">
+        <div class="flex items-center gap-2 mb-2">
+          <input type="text"
+                 placeholder="Search all messages..."
+                 class="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                 data-whatsapp-chat-target="globalSearchInput"
+                 data-action="input->whatsapp-chat#performGlobalSearch">
+          <button class="text-xs text-gray-500 hover:text-gray-700" data-action="click->whatsapp-chat#searchAllMessages">Close</button>
+        </div>
+        <div data-whatsapp-chat-target="globalSearchResults" class="max-h-60 overflow-y-auto space-y-1"></div>
+      </div>
     </div>
 
     <!-- Conversations -->

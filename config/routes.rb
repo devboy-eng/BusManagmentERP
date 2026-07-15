@@ -54,8 +54,26 @@ Rails.application.routes.draw do
       post :send_reply
       patch :mark_read
       post :send_to_lead
+      post :send_media
+      post :react
+      post :assign
+      delete :unassign
+      post :schedule_message
+    end
+    collection do
+      get :search
     end
   end
+
+  resources :quick_responses, except: [:show]
+  resources :auto_reply_rules, except: [:show] do
+    member { patch :toggle }
+  end
+  resources :scheduled_messages, only: [:index, :destroy] do
+    member { patch :cancel }
+  end
+
+  resource :whatsapp_guide, only: [:show], controller: "whatsapp_guide"
 
   resources :whatsapp_marketing, only: [:index] do
     collection do

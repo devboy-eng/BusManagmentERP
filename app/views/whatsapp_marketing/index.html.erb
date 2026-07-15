@@ -1,5 +1,13 @@
 <% content_for :page_title, "WhatsApp Marketing" %>
 
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900">WhatsApp Marketing</h2>
+    <p class="text-xs text-gray-500 mt-1">Send promotional messages to leads and customers</p>
+  </div>
+  <%= render "shared/guide_button", section: "marketing" %>
+</div>
+
 <!-- Configuration Warning -->
 <% unless @configured %>
   <div class="mb-6 rounded-xl border border-yellow-200 bg-yellow-50 p-4 flex items-center gap-3">

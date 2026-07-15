@@ -1,6 +1,6 @@
 class WhatsappChatsController < ApplicationController
   before_action :load_conversations, only: [:index, :show]
-  before_action :load_conversation, only: [:show, :send_reply, :mark_read]
+  before_action :load_conversation, only: [:show, :send_reply, :mark_read, :send_media, :react, :assign, :unassign, :schedule_message]
 
   def index
     @selected = @conversations.first
@@ -92,6 +92,144 @@ class WhatsappChatsController < ApplicationController
   def mark_read
     @conversation.mark_as_read!
     head :ok
+  end
+
+  def send_media
+    media_url = params[:media_url]&.strip
+    media_type = params[:media_type] || "image"
+    caption = params[:caption]&.strip
+    filename = params[:filename]
+
+    if media_url.blank?
+      return render json: { error: "Media URL is required" }, status: :unprocessable_entity
+    end
+
+    begin
+      service = WhatsappService.new
+
+      api_result = service.send_media_message(
+        phone: @conversation.contact_phone,
+        type: media_type,
+        media_url: media_url,
+        caption: caption,
+        filename: filename
+      )
+
+      message = WhatsappMessage.create!(
+        recipient_phone: @conversation.contact_phone,
+        recipient_name: @conversation.contact_name,
+        recipient: @conversation.contact,
+        message_body: caption,
+        message_type: media_type,
+        media_url: media_url,
+        media_caption: caption,
+        media_filename: filename,
+        user: current_user,
+        direction: "outgoing",
+        whatsapp_conversation: @conversation,
+        status: api_result[:success] ? :sent : :failed,
+        whatsapp_message_id: api_result[:message_id],
+        error_message: api_result[:error]
+      )
+
+      @conversation.update_last_message!(message)
+      broadcast_new_message(@conversation, message)
+      broadcast_conversation_update(@conversation)
+
+      render json: { success: true, message_id: message.id }
+    rescue WhatsappService::ApiError => e
+      render json: { error: e.message }, status: :unprocessable_entity
+    end
+  end
+
+  def react
+    message = WhatsappMessage.find(params[:message_id])
+    emoji = params[:emoji]
+
+    if emoji.blank?
+      return render json: { error: "Emoji is required" }, status: :unprocessable_entity
+    end
+
+    begin
+      service = WhatsappService.new
+      result = service.send_reaction(
+        phone: @conversation.contact_phone,
+        message_id: message.whatsapp_message_id,
+        emoji: emoji
+      )
+
+      if result[:success]
+        reaction_record = WhatsappMessage.create!(
+          recipient_phone: @conversation.contact_phone,
+          message_type: "reaction",
+          reaction_emoji: emoji,
+          context_message_id: message.whatsapp_message_id,
+          direction: "outgoing",
+          whatsapp_conversation: @conversation,
+          whatsapp_message_id: result[:message_id],
+          user: current_user,
+          status: :sent
+        )
+
+        broadcast_new_message(@conversation, reaction_record)
+        render json: { success: true }
+      else
+        render json: { error: result[:error] }, status: :unprocessable_entity
+      end
+    rescue WhatsappService::ApiError => e
+      render json: { error: e.message }, status: :unprocessable_entity
+    end
+  end
+
+  def assign
+    user = User.find(params[:user_id])
+    @conversation.update!(assigned_user: user)
+    redirect_to whatsapp_chat_path(@conversation), notice: "Conversation assigned to #{user.name}", status: :see_other
+  end
+
+  def unassign
+    @conversation.update!(assigned_user: nil)
+    redirect_to whatsapp_chat_path(@conversation), notice: "Conversation unassigned", status: :see_other
+  end
+
+  def schedule_message
+    scheduled = ScheduledMessage.new(
+      whatsapp_conversation: @conversation,
+      message_body: params[:message_body],
+      scheduled_at: params[:scheduled_at],
+      user: current_user
+    )
+
+    if scheduled.save
+      render json: { success: true, id: scheduled.id }
+    else
+      render json: { error: scheduled.errors.full_messages.join(", ") }, status: :unprocessable_entity
+    end
+  end
+
+  def search
+    query = params[:q]&.strip
+    if query.blank?
+      return render json: { results: [] }
+    end
+
+    messages = WhatsappMessage.search_content(query)
+                              .includes(:whatsapp_conversation)
+                              .recent
+                              .limit(50)
+
+    results = messages.map do |msg|
+      {
+        id: msg.id,
+        body: msg.message_body&.truncate(100),
+        conversation_id: msg.whatsapp_conversation_id,
+        conversation_name: msg.whatsapp_conversation&.display_name,
+        direction: msg.direction,
+        created_at: msg.created_at.strftime("%b %d, %I:%M %p")
+      }
+    end
+
+    render json: { results: results }
   end
 
   def send_to_lead

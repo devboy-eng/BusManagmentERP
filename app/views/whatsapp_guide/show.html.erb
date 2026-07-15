@@ -1,0 +1,396 @@
+<% content_for :page_title, "WhatsApp Guide" %>
+
+<div class="max-w-4xl">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+        <svg class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900">WhatsApp Feature Guide</h2>
+        <p class="text-xs text-gray-500">Complete reference for all WhatsApp features, rules, and troubleshooting</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Navigation -->
+  <div class="mb-8 rounded-xl border border-gray-200 bg-white p-5">
+    <h3 class="text-xs font-semibold text-gray-500 uppercase mb-3">Quick Navigation</h3>
+
+    <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-2">Messaging</p>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+      <a href="#guide-chat" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Chat</a>
+      <a href="#guide-media" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Media Messages</a>
+      <a href="#guide-marketing" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Marketing</a>
+      <a href="#guide-templates" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Templates</a>
+    </div>
+
+    <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-2">Automation</p>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+      <a href="#guide-quick-responses" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Quick Responses</a>
+      <a href="#guide-auto-reply" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Auto-Reply</a>
+      <a href="#guide-scheduled" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Scheduled Messages</a>
+      <a href="#guide-follow-ups" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Follow-ups</a>
+    </div>
+
+    <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-2">Tools & Configuration</p>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+      <a href="#guide-assignment" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Assignment</a>
+      <a href="#guide-reactions" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Reactions</a>
+      <a href="#guide-search" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Search</a>
+      <a href="#guide-settings" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Settings</a>
+    </div>
+
+    <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-2">Reference</p>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <a href="#guide-terms" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">Terms & Conditions</a>
+      <a href="#guide-errors" class="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition text-center">All Errors</a>
+    </div>
+  </div>
+
+  <!-- Section 1: Chat -->
+  <div id="guide-chat" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <%= render "shared/guide_content_chat" %>
+  </div>
+
+  <!-- Section 2: Media -->
+  <div id="guide-media" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <%= render "shared/guide_content_media" %>
+  </div>
+
+  <!-- Section 3: Marketing -->
+  <div id="guide-marketing" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <%= render "shared/guide_content_marketing" %>
+  </div>
+
+  <!-- Section 4: Templates -->
+  <div id="guide-templates" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <%= render "shared/guide_content_templates" %>
+  </div>
+
+  <!-- Section 5: Quick Responses -->
+  <div id="guide-quick-responses" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <%= render "shared/guide_content_quick_responses" %>
+  </div>
+
+  <!-- Section 6: Auto-Reply -->
+  <div id="guide-auto-reply" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <%= render "shared/guide_content_auto_reply" %>
+  </div>
+
+  <!-- Section 7: Scheduled Messages -->
+  <div id="guide-scheduled" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <%= render "shared/guide_content_scheduled" %>
+  </div>
+
+  <!-- Section 8: Follow-ups -->
+  <div id="guide-follow-ups" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <%= render "shared/guide_content_follow_ups" %>
+  </div>
+
+  <!-- Section 9: Conversation Assignment -->
+  <div id="guide-assignment" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <div class="space-y-5">
+      <div>
+        <h4 class="text-sm font-semibold text-gray-900 mb-2">Conversation Assignment</h4>
+        <p class="text-xs text-gray-600 leading-relaxed">Assign conversations to specific team members for accountability and workload management. Assigned conversations show a badge on the conversation list and chat header.</p>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-1">How to Use</h5>
+        <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+          <li>Open a conversation in the chat</li>
+          <li>Click the <span class="font-medium text-gray-800">person icon</span> in the chat header</li>
+          <li>Select a team member from the dropdown to assign</li>
+          <li>The assigned user's initial appears as a badge on the conversation</li>
+          <li>Click <span class="font-medium text-gray-800">Unassign</span> to remove the assignment</li>
+        </ul>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-1">Rules</h5>
+        <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+          <li>Only <strong>active users</strong> appear in the assignment dropdown</li>
+          <li>A conversation can be assigned to only <strong>one user</strong> at a time</li>
+          <li>Reassigning replaces the current assignment</li>
+          <li>Assignment is informational — all users can still view and reply to the conversation</li>
+          <li>Unassigning removes the badge but does not affect the conversation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 10: Reactions -->
+  <div id="guide-reactions" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <div class="space-y-5">
+      <div>
+        <h4 class="text-sm font-semibold text-gray-900 mb-2">Message Reactions</h4>
+        <p class="text-xs text-gray-600 leading-relaxed">React to messages with emoji reactions. Reactions are sent via the WhatsApp API and appear as small emoji badges below the message bubble.</p>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-1">How to Use</h5>
+        <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+          <li>Hover over any message in the chat</li>
+          <li>Click the <span class="font-medium text-gray-800">smiley face icon</span> that appears</li>
+          <li>Select an emoji from the picker (thumbs up, heart, laugh, surprise, sad, pray)</li>
+          <li>The reaction is sent to the recipient and displayed on the message</li>
+          <li>Incoming reactions from customers also appear as emoji badges</li>
+        </ul>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-1">Rules</h5>
+        <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+          <li>Reactions can only be sent on messages that have a WhatsApp message ID</li>
+          <li>WhatsApp supports a limited set of reaction emojis</li>
+          <li>Sending a new reaction to the same message replaces the previous one</li>
+          <li>Sending an empty reaction removes the previous reaction</li>
+        </ul>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-red-700 mb-1">Common Errors</h5>
+        <div class="space-y-2">
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Emoji is required"</p>
+            <p class="text-[11px] text-red-600 mt-0.5">No emoji was selected. Pick an emoji from the reaction picker.</p>
+          </div>
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">Reaction fails silently</p>
+            <p class="text-[11px] text-red-600 mt-0.5">The target message may have been deleted or the WhatsApp API rejected the reaction. Check the browser console for details.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 11: Search -->
+  <div id="guide-search" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <div class="space-y-5">
+      <div>
+        <h4 class="text-sm font-semibold text-gray-900 mb-2">Full-Text Message Search</h4>
+        <p class="text-xs text-gray-600 leading-relaxed">Search across all message content to quickly find specific conversations or information. Two search modes are available: within a conversation and across all conversations.</p>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-1">How to Use</h5>
+        <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+          <li><strong>Filter conversations:</strong> Type in the search box above the conversation list to filter by name or phone</li>
+          <li><strong>Search all messages:</strong> Click "Search Messages" in the left panel to search message content across all conversations</li>
+          <li><strong>Search within chat:</strong> Click the <span class="font-medium text-gray-800">magnifying glass icon</span> in the chat header to search within the current conversation</li>
+          <li>Matching messages are highlighted; non-matching messages are dimmed</li>
+          <li>Click a global search result to jump to that conversation</li>
+        </ul>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-1">Rules</h5>
+        <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+          <li>Search is case-insensitive and matches partial words</li>
+          <li>Global search returns up to <strong>50 results</strong> across all conversations</li>
+          <li>Only text message content is searchable (media captions are included)</li>
+          <li>Minimum 2 characters required for global search</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 12: Settings -->
+  <div id="guide-settings" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <%= render "shared/guide_content_settings" %>
+  </div>
+
+  <!-- Section 13: Terms & Conditions -->
+  <div id="guide-terms" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <div class="space-y-5">
+      <div>
+        <h4 class="text-sm font-semibold text-gray-900 mb-2">Terms & Conditions</h4>
+        <p class="text-xs text-gray-600 leading-relaxed">By using the WhatsApp integration features, you agree to the following terms and conditions.</p>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-1">Meta Platform Compliance</h5>
+        <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+          <li>You must comply with the <strong>Meta WhatsApp Business Platform Terms of Service</strong></li>
+          <li>You must comply with the <strong>WhatsApp Business Messaging Policy</strong></li>
+          <li>You must comply with the <strong>WhatsApp Commerce Policy</strong></li>
+          <li>Violations may result in account restrictions or permanent banning by Meta</li>
+        </ul>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-1">Messaging Rules</h5>
+        <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+          <li><strong>Opt-in required:</strong> You must obtain explicit consent before messaging a customer</li>
+          <li><strong>24-hour window:</strong> Free-form messages are allowed only within 24 hours of the customer's last message. Outside this window, only pre-approved templates may be sent.</li>
+          <li><strong>No spam:</strong> Bulk unsolicited messages, repeated unwanted contact, or misleading content is prohibited</li>
+          <li><strong>Template approval:</strong> All message templates must be submitted to and approved by Meta before use</li>
+          <li><strong>Accurate information:</strong> Message content must be truthful and not misleading</li>
+          <li><strong>Opt-out:</strong> You must honor opt-out requests and stop messaging users who ask to be removed</li>
+        </ul>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-1">Data & Privacy</h5>
+        <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+          <li>Message content and customer data are stored in your application database</li>
+          <li>Media files (images, videos, documents) URLs from WhatsApp may expire after a period</li>
+          <li>You are responsible for protecting stored customer data per applicable privacy laws (GDPR, etc.)</li>
+          <li>API credentials (Access Token, App Secret) must be kept secure and never shared publicly</li>
+          <li>Webhook payloads contain customer phone numbers and message content — ensure your server is secure</li>
+        </ul>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-1">Quality & Rate Limits</h5>
+        <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+          <li>Meta assigns a <strong>quality rating</strong> (Green, Yellow, Red) to your phone number based on user feedback</li>
+          <li>Low quality rating can result in reduced messaging limits or account restrictions</li>
+          <li>New accounts start with a <strong>250 business-initiated conversations per 24 hours</strong> limit</li>
+          <li>The limit increases automatically as you maintain good quality (to 1K, 10K, 100K, unlimited)</li>
+          <li>Standard <strong>API rate limits</strong> apply (80 messages/second for text, varies by type)</li>
+          <li>Each conversation has a <strong>pricing window</strong> — check Meta's pricing for your region</li>
+        </ul>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-1">Auto-Reply & Scheduled Messages</h5>
+        <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+          <li>Auto-replies count as business-initiated messages and consume your quota</li>
+          <li>Scheduled messages will fail if the API is not configured at the time of sending</li>
+          <li>You are responsible for the content sent by auto-reply rules and scheduled messages</li>
+          <li>Excessive auto-replies may trigger Meta's spam detection</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 14: All Errors Reference -->
+  <div id="guide-errors" class="mb-6 rounded-xl border border-gray-200 bg-white p-6 scroll-mt-20">
+    <div class="space-y-5">
+      <div>
+        <h4 class="text-sm font-semibold text-gray-900 mb-2">Error Messages Reference</h4>
+        <p class="text-xs text-gray-600 leading-relaxed">A comprehensive list of error messages you may encounter and how to resolve them.</p>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-2">API & Connection Errors</h5>
+        <div class="space-y-2">
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"WhatsApp API is not configured"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> API credentials are missing or the integration is disabled.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Go to WhatsApp > Settings, enter your credentials, check "Active", and save.</p>
+          </div>
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Invalid OAuth access token"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> The access token is expired, revoked, or incorrectly entered.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Generate a new permanent token from Business Settings > System Users. Do not use the temporary 24-hour token from API Setup.</p>
+          </div>
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Connection failed" / "Unknown API error"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> Network issue or Meta API is temporarily unavailable.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Check your internet connection and try again. If persistent, check Meta's API status page.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-2">Message Errors</h5>
+        <div class="space-y-2">
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Message too long"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> Message exceeds 4,096 characters.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Shorten your message to under 4,096 characters.</p>
+          </div>
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Re-engagement message" / "(#131047) Outside 24h window"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> The 24-hour customer-initiated conversation window has expired.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Send an approved template message first to re-open the conversation window.</p>
+          </div>
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Recipient phone number not in allowed list"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> If using a test number, the recipient is not added to the allowed list.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Add the recipient's number to the test phone numbers in Meta's API Setup.</p>
+          </div>
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Media URL is required"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> Attempted to send media without a file.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Select a file using the attachment button before sending.</p>
+          </div>
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Rate limit exceeded" (Error 130429)</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> Exceeded the maximum messages for your current tier.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Wait and retry, or request a tier upgrade from Meta.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-2">Template Errors</h5>
+        <div class="space-y-2">
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Template name already exists"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> Duplicate template name within your Business Account.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Use a different name or delete the existing template first.</p>
+          </div>
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Template rejected by Meta"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> Content violates Meta's policies (prohibited content, misleading text, missing opt-out).</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Review Meta's template guidelines, edit the template, and resubmit.</p>
+          </div>
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Template not approved"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> Attempted to send a template that is still pending or was rejected.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Wait for approval or resubmit with corrections.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-2">Validation Errors</h5>
+        <div class="space-y-2">
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Title can't be blank" / "Body can't be blank" / "Name can't be blank"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> Required fields are empty.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Fill in all required fields marked in the form.</p>
+          </div>
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Keyword can't be blank"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> An auto-reply rule with "Keyword" trigger type is missing the keyword field.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Enter a keyword or change the trigger type to "First Message" or "Outside Hours".</p>
+          </div>
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Scheduled at must be in the future"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> The selected date/time is in the past.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Choose a future date and time for the scheduled message.</p>
+          </div>
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"Only pending messages can be cancelled"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> The message has already been sent, failed, or cancelled.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Only pending messages can be cancelled. Check the status column.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h5 class="text-xs font-semibold text-gray-800 mb-2">Permission Errors</h5>
+        <div class="space-y-2">
+          <div class="rounded-lg bg-red-50 border border-red-100 p-2.5">
+            <p class="text-[11px] font-semibold text-red-800">"You do not have access to this feature"</p>
+            <p class="text-[11px] text-red-600 mt-0.5"><strong>Cause:</strong> Your user role does not have the WhatsApp permission enabled.</p>
+            <p class="text-[11px] text-red-600"><strong>Fix:</strong> Ask a Super Admin to enable WhatsApp access for your role under Settings > Roles & Privileges.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back to top -->
+  <div class="text-center pb-6">
+    <a href="#" class="text-xs text-indigo-600 hover:text-indigo-500 font-medium">Back to top</a>
+  </div>
+</div>

@@ -39,6 +39,8 @@ class User < ApplicationRecord
   has_many :whatsapp_templates
   has_many :follow_ups
   has_many :csat_responses
+  has_many :assigned_conversations, class_name: "WhatsappConversation", foreign_key: :assigned_user_id
+  has_many :quick_responses
 
   def super_admin?
     role&.name == "Super Admin"

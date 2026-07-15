@@ -1,0 +1,67 @@
+<div class="space-y-5">
+  <div>
+    <h4 class="text-sm font-semibold text-gray-900 mb-1">WhatsApp Settings</h4>
+    <p class="text-xs text-gray-500 leading-relaxed">Configure your Meta WhatsApp Business API credentials to enable messaging. All WhatsApp features require a properly configured API connection.</p>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">Setup Steps</h5>
+    <ol class="text-xs text-gray-600 space-y-1.5 list-decimal pl-4">
+      <li>Create a Meta Business account and a WhatsApp Business app at <strong>developers.facebook.com</strong></li>
+      <li>Create a System User under Business Settings and generate a permanent Access Token</li>
+      <li>Copy the <strong>Phone Number ID</strong> from the WhatsApp API Setup page</li>
+      <li>Copy the <strong>Business Account ID</strong> from WhatsApp Business Accounts</li>
+      <li>Paste all values in the settings form and check "Active"</li>
+      <li>Click <strong>Test Connection</strong> to verify everything works</li>
+      <li>Configure the <strong>Webhook</strong> in Meta's dashboard using the Callback URL and Verify Token shown below</li>
+    </ol>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">Field Descriptions</h5>
+    <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+      <li><strong>Phone Number ID:</strong> Unique identifier for your WhatsApp phone number (found in API Setup)</li>
+      <li><strong>Access Token:</strong> Permanent access token from System Users (not the temporary one from API Setup)</li>
+      <li><strong>Business Account ID:</strong> Your WhatsApp Business Account ID (used for template management)</li>
+      <li><strong>App ID:</strong> Your Meta App ID (used for generating dashboard links)</li>
+      <li><strong>App Secret:</strong> Used to verify webhook payloads are genuinely from Meta</li>
+      <li><strong>Verify Token:</strong> Auto-generated token used during webhook setup</li>
+      <li><strong>Webhook Base URL:</strong> Your application's public-facing domain (e.g. https://yourapp.com)</li>
+    </ul>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">Terms & Conditions</h5>
+    <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
+      <li>You must comply with <strong>Meta's WhatsApp Business Policy</strong> and <strong>Commerce Policy</strong></li>
+      <li>Recipients must <strong>opt in</strong> to receive messages from your business</li>
+      <li>You may not send <strong>spam, unsolicited marketing, or harassing</strong> messages</li>
+      <li>Meta may <strong>limit or ban</strong> your number if your quality rating drops due to user reports</li>
+      <li>Template messages must be <strong>approved by Meta</strong> before they can be sent</li>
+      <li>Conversation-based pricing applies — check Meta's pricing page for your region</li>
+      <li>You are responsible for <strong>securing your API credentials</strong> (access tokens, app secrets)</li>
+    </ul>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-red-700 mb-2">Common Errors</h5>
+    <div class="space-y-2">
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"WhatsApp API is not configured"</p>
+        <p class="text-[11px] text-red-600 mt-1">Settings are missing or the "Active" checkbox is not checked. Enter all required fields and activate.</p>
+      </div>
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"Connection failed: Invalid OAuth access token"</p>
+        <p class="text-[11px] text-red-600 mt-1">The access token is invalid or expired. Generate a new permanent token from System Users (not the temporary 24-hour token).</p>
+      </div>
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"Webhook verification failed"</p>
+        <p class="text-[11px] text-red-600 mt-1">The Verify Token in Meta's dashboard doesn't match. Copy the exact token from the settings page.</p>
+      </div>
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"Invalid signature"</p>
+        <p class="text-[11px] text-red-600 mt-1">The App Secret doesn't match your Meta app. Copy it from App Settings > Basic in your Meta dashboard.</p>
+      </div>
+    </div>
+  </div>
+</div>

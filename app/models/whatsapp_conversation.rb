@@ -1,6 +1,8 @@
 class WhatsappConversation < ApplicationRecord
   belongs_to :contact, polymorphic: true, optional: true
+  belongs_to :assigned_user, class_name: "User", foreign_key: :assigned_user_id, optional: true
   has_many :whatsapp_messages, dependent: :nullify
+  has_many :scheduled_messages, dependent: :destroy
 
   validates :contact_phone, presence: true, uniqueness: true
 
@@ -56,6 +58,14 @@ class WhatsappConversation < ApplicationRecord
   def last_message_preview
     return "" if last_message_body.blank?
     last_message_body.truncate(50)
+  end
+
+  def assigned?
+    assigned_user_id.present?
+  end
+
+  def assigned_to?(user)
+    assigned_user_id == user.id
   end
 
   # Meta allows free-form replies only within 24 hours of the customer's last message.

@@ -1,0 +1,72 @@
+<% content_for :page_title, "Auto-Reply Rules" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900">Auto-Reply Rules</h2>
+    <p class="text-xs text-gray-500 mt-1">Automatic responses triggered by keywords or conditions</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <%= render "shared/guide_button", section: "auto_reply" %>
+    <%= link_to new_auto_reply_rule_path, class: "inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition" do %>
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+      New Rule
+    <% end %>
+  </div>
+</div>
+
+<div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+  <% if @rules.any? %>
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead>
+        <tr class="bg-gray-50">
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Name</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Trigger</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Keyword</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Reply</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Status</th>
+          <th class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @rules.each do |rule| %>
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-4 py-3 text-xs font-medium text-gray-900"><%= rule.name %></td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium
+                <%= case rule.trigger_type
+                    when 'keyword' then 'bg-blue-50 text-blue-700 border-blue-200'
+                    when 'first_message' then 'bg-purple-50 text-purple-700 border-purple-200'
+                    when 'outside_hours' then 'bg-orange-50 text-orange-700 border-orange-200'
+                    end %>">
+                <%= rule.trigger_type.titleize %>
+              </span>
+            </td>
+            <td class="px-4 py-3 text-xs text-gray-500"><%= rule.keyword.presence || "--" %></td>
+            <td class="px-4 py-3 text-xs text-gray-500 max-w-xs truncate"><%= truncate(rule.reply_body, length: 50) %></td>
+            <td class="px-4 py-3">
+              <% if rule.active? %>
+                <span class="inline-flex items-center rounded-full bg-green-50 border border-green-200 px-2 py-0.5 text-[11px] font-medium text-green-700">Active</span>
+              <% else %>
+                <span class="inline-flex items-center rounded-full bg-gray-50 border border-gray-200 px-2 py-0.5 text-[11px] font-medium text-gray-500">Inactive</span>
+              <% end %>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <%= link_to toggle_auto_reply_rule_path(rule), data: { turbo_method: :patch }, class: "text-xs #{rule.active? ? 'text-yellow-600 hover:text-yellow-500' : 'text-green-600 hover:text-green-500'}" do %>
+                  <%= rule.active? ? "Deactivate" : "Activate" %>
+                <% end %>
+                <%= link_to "Edit", edit_auto_reply_rule_path(rule), class: "text-indigo-600 hover:text-indigo-500 text-xs" %>
+                <%= link_to "Delete", auto_reply_rule_path(rule), data: { turbo_method: :delete, turbo_confirm: "Delete this rule?" }, class: "text-red-600 hover:text-red-500 text-xs" %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-xs text-gray-500">No auto-reply rules yet.</p>
+      <p class="text-xs text-gray-400 mt-1"><%= link_to "Create one", new_auto_reply_rule_path, class: "text-indigo-600 hover:text-indigo-500" %> to automate responses.</p>
+    </div>
+  <% end %>
+</div>

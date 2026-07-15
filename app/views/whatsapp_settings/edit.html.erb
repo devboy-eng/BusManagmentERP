@@ -3,9 +3,12 @@
 <% meta_link_class = "rounded-lg bg-blue-50 px-2.5 py-2.5 text-[11px] font-medium text-blue-600 hover:bg-blue-100 transition whitespace-nowrap" %>
 
 <div class="max-w-2xl">
-  <div class="mb-6">
-    <h2 class="text-lg font-semibold text-gray-900">WhatsApp Cloud API Configuration</h2>
-    <p class="text-xs text-gray-500 mt-1">Configure your Meta WhatsApp Business API credentials</p>
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h2 class="text-lg font-semibold text-gray-900">WhatsApp Cloud API Configuration</h2>
+      <p class="text-xs text-gray-500 mt-1">Configure your Meta WhatsApp Business API credentials</p>
+    </div>
+    <%= render "shared/guide_button", section: "settings" %>
   </div>
 
   <div class="rounded-xl border border-gray-200 bg-white p-6">
