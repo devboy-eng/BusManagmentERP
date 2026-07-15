@@ -269,32 +269,41 @@ class WhatsappChatsController < ApplicationController
   def send_to_lead
     @conversation = WhatsappConversation.find(params[:id])
 
-    # Check if conversation is already linked to a lead
-    if @conversation.contact_type == "Lead" && @conversation.contact.present?
-      redirect_to whatsapp_chat_path(@conversation), notice: "This conversation is already linked to a lead.", status: :see_other
+    # Check if conversation is already linked to a lead/customer
+    if @conversation.contact.present?
+      redirect_to whatsapp_chat_path(@conversation), notice: "This conversation is already linked to a #{@conversation.contact_type.downcase}.", status: :see_other
       return
     end
 
+    lead_params = params.require(:lead).permit(:name, :phone, :email, :category)
+    phone = lead_params[:phone].presence || @conversation.contact_phone
+
     # Check if a lead with this phone already exists
-    phone = @conversation.contact_phone
     existing_lead = Lead.find_by(phone: phone) ||
                     Lead.find_by(phone: phone&.gsub(/\D/, "")&.last(10)) ||
                     Lead.find_by(phone: "+91#{phone&.gsub(/\D/, '')&.last(10)}")
 
     if existing_lead
+      # Update existing lead with any new info provided
+      existing_lead.update(
+        email: lead_params[:email].presence || existing_lead.email,
+        category: lead_params[:category].presence || existing_lead.category
+      )
       @conversation.update!(contact: existing_lead, contact_name: existing_lead.name)
       redirect_to whatsapp_chat_path(@conversation), notice: "Conversation linked to existing lead: #{existing_lead.name}", status: :see_other
     else
       lead = Lead.new(
-        name: @conversation.contact_name.presence || "WhatsApp Lead",
+        name: lead_params[:name].presence || @conversation.contact_name.presence || "WhatsApp Lead",
         phone: phone,
+        email: lead_params[:email],
+        category: lead_params[:category],
         user: current_user,
         status: :pending
       )
 
       if lead.save
         @conversation.update!(contact: lead, contact_name: lead.name)
-        redirect_to whatsapp_chat_path(@conversation), notice: "Lead created successfully! #{lead.name} has been added to your leads.", status: :see_other
+        redirect_to whatsapp_chat_path(@conversation), notice: "Lead created: #{lead.name} has been added to your leads.", status: :see_other
       else
         redirect_to whatsapp_chat_path(@conversation), alert: "Failed to create lead: #{lead.errors.full_messages.join(', ')}", status: :see_other
       end
