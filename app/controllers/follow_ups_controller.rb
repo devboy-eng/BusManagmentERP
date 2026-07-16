@@ -1,50 +1,102 @@
 class FollowUpsController < ApplicationController
   def index
-    @follow_ups = FollowUp.includes(:lead, :user).ordered
+    @campaigns = FollowUpCampaign.includes(:whatsapp_template, :user).ordered
 
     if params[:status].present?
-      @follow_ups = @follow_ups.where(status: params[:status])
+      @campaigns = @campaigns.where(status: params[:status])
     end
 
-    @pagy, @follow_ups = pagy(@follow_ups, items: 15)
+    @pagy, @campaigns = pagy(@campaigns, items: 15)
   end
 
   def new
-    @follow_up = FollowUp.new
-    @follow_up.lead_id = params[:lead_id] if params[:lead_id].present?
     @leads = Lead.order(:name)
+    @templates = WhatsappTemplate.approved.ordered
   end
 
   def create
-    @follow_up = current_user.follow_ups.build(follow_up_params)
-    if @follow_up.save
-      ProcessScheduledFollowUpsJob.set(wait_until: @follow_up.scheduled_at).perform_later
-      redirect_to follow_ups_path, notice: "Follow-up scheduled successfully."
+    template = WhatsappTemplate.find_by(id: params[:template_id])
+    unless template
+      @leads = Lead.order(:name)
+      @templates = WhatsappTemplate.approved.ordered
+      flash.now[:alert] = "Please select an approved template."
+      render :new, status: :unprocessable_entity
+      return
+    end
+
+    campaign = FollowUpCampaign.new(
+      name: params[:campaign_name].presence,
+      whatsapp_template: template,
+      template_variables: (params[:variables].presence || []).to_json,
+      scheduled_at: params[:scheduled_at],
+      user: current_user
+    )
+
+    # Collect contacts from selected leads
+    contacts_data = []
+    if params[:lead_ids].present?
+      Lead.where(id: params[:lead_ids]).each do |lead|
+        contacts_data << { lead: lead, name: lead.name, phone: lead.phone }
+      end
+    end
+
+    # Collect contacts from CSV upload
+    if params[:csv_contacts].present?
+      params[:csv_contacts].each do |csv_contact|
+        next if csv_contact[:phone].blank?
+        contacts_data << { lead: nil, name: csv_contact[:name], phone: csv_contact[:phone] }
+      end
+    end
+
+    if contacts_data.empty?
+      @leads = Lead.order(:name)
+      @templates = WhatsappTemplate.approved.ordered
+      flash.now[:alert] = "Please select at least one recipient."
+      render :new, status: :unprocessable_entity
+      return
+    end
+
+    if campaign.save
+      contacts_data.each do |cd|
+        campaign.contacts.create!(
+          lead: cd[:lead],
+          name: cd[:name],
+          phone: cd[:phone]
+        )
+      end
+      campaign.update!(total_contacts: contacts_data.size)
+
+      redirect_to follow_ups_path, notice: "Campaign scheduled with #{contacts_data.size} recipients."
     else
       @leads = Lead.order(:name)
+      @templates = WhatsappTemplate.approved.ordered
+      flash.now[:alert] = campaign.errors.full_messages.join(", ")
       render :new, status: :unprocessable_entity
     end
   end
 
+  # Legacy follow-up actions
   def cancel
-    @follow_up = FollowUp.find(params[:id])
-    if @follow_up.pending?
-      @follow_up.update!(status: :cancelled)
-      redirect_to follow_ups_path, notice: "Follow-up cancelled."
+    @follow_up = FollowUp.find_by(id: params[:id])
+    if @follow_up
+      if @follow_up.pending?
+        @follow_up.update!(status: :cancelled)
+        redirect_to follow_ups_path, notice: "Follow-up cancelled."
+      else
+        redirect_to follow_ups_path, alert: "Only pending follow-ups can be cancelled."
+      end
     else
-      redirect_to follow_ups_path, alert: "Only pending follow-ups can be cancelled."
+      redirect_to follow_ups_path, alert: "Follow-up not found."
     end
   end
 
   def destroy
-    @follow_up = FollowUp.find(params[:id])
-    @follow_up.destroy
-    redirect_to follow_ups_path, notice: "Follow-up deleted."
-  end
-
-  private
-
-  def follow_up_params
-    params.require(:follow_up).permit(:lead_id, :message, :scheduled_at)
+    @follow_up = FollowUp.find_by(id: params[:id])
+    if @follow_up
+      @follow_up.destroy
+      redirect_to follow_ups_path, notice: "Follow-up deleted."
+    else
+      redirect_to follow_ups_path, alert: "Follow-up not found."
+    end
   end
 end

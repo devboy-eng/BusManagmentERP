@@ -18,6 +18,7 @@ class ApplicationController < ActionController::Base
     "whatsapp_settings"    => :whatsapp,
     "whatsapp_templates"   => :whatsapp,
     "follow_ups"           => :whatsapp,
+    "follow_up_campaigns"  => :whatsapp,
     "whatsapp_chats"       => :whatsapp,
     "quick_responses"      => :whatsapp,
     "auto_reply_rules"     => :whatsapp,

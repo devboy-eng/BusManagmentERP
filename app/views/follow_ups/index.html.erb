@@ -1,15 +1,15 @@
-<% content_for :page_title, "Follow-ups" %>
+<% content_for :page_title, "Follow-up Campaigns" %>
 
 <div class="mb-6 flex items-center justify-between">
   <div>
-    <h2 class="text-lg font-semibold text-gray-900">Scheduled Follow-ups</h2>
-    <p class="text-xs text-gray-500 mt-1">Manage automated WhatsApp follow-up reminders</p>
+    <h2 class="text-lg font-semibold text-gray-900">Follow-up Campaigns</h2>
+    <p class="text-xs text-gray-500 mt-1">Schedule and manage WhatsApp template campaigns</p>
   </div>
   <div class="flex items-center gap-2">
     <%= render "shared/guide_button", section: "follow_ups" %>
     <%= link_to new_follow_up_path, class: "inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition" do %>
       <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-      Schedule Follow-up
+      New Campaign
     <% end %>
   </div>
 </div>
@@ -18,46 +18,66 @@
 <div class="mb-4 flex items-center gap-2">
   <%= link_to "All", follow_ups_path, class: "rounded-lg px-3 py-1.5 text-xs font-medium transition #{params[:status].blank? ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}" %>
   <%= link_to "Pending", follow_ups_path(status: :pending), class: "rounded-lg px-3 py-1.5 text-xs font-medium transition #{params[:status] == 'pending' ? 'bg-yellow-50 text-yellow-700' : 'text-gray-500 hover:bg-gray-100'}" %>
-  <%= link_to "Sent", follow_ups_path(status: :sent), class: "rounded-lg px-3 py-1.5 text-xs font-medium transition #{params[:status] == 'sent' ? 'bg-green-50 text-green-700' : 'text-gray-500 hover:bg-gray-100'}" %>
-  <%= link_to "Failed", follow_ups_path(status: :failed), class: "rounded-lg px-3 py-1.5 text-xs font-medium transition #{params[:status] == 'failed' ? 'bg-red-50 text-red-700' : 'text-gray-500 hover:bg-gray-100'}" %>
+  <%= link_to "Processing", follow_ups_path(status: :processing), class: "rounded-lg px-3 py-1.5 text-xs font-medium transition #{params[:status] == 'processing' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-100'}" %>
+  <%= link_to "Completed", follow_ups_path(status: :completed), class: "rounded-lg px-3 py-1.5 text-xs font-medium transition #{params[:status] == 'completed' ? 'bg-green-50 text-green-700' : 'text-gray-500 hover:bg-gray-100'}" %>
   <%= link_to "Cancelled", follow_ups_path(status: :cancelled), class: "rounded-lg px-3 py-1.5 text-xs font-medium transition #{params[:status] == 'cancelled' ? 'bg-gray-100 text-gray-700' : 'text-gray-500 hover:bg-gray-100'}" %>
 </div>
 
 <div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
-  <% if @follow_ups.any? %>
+  <% if @campaigns.any? %>
     <table class="min-w-full divide-y divide-gray-200">
       <thead>
         <tr class="bg-gray-50">
-          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Lead</th>
-          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Message</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Campaign / Template</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Recipients</th>
           <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Scheduled At</th>
           <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Status</th>
           <th class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase">Actions</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
-        <% @follow_ups.each do |follow_up| %>
+        <% @campaigns.each do |campaign| %>
           <tr class="hover:bg-gray-50 transition">
             <td class="px-4 py-3">
-              <p class="text-xs font-medium text-gray-900"><%= follow_up.lead.name %></p>
-              <p class="text-[11px] text-gray-400"><%= follow_up.lead.phone %></p>
-            </td>
-            <td class="px-4 py-3 text-xs text-gray-500 max-w-xs truncate"><%= truncate(follow_up.message, length: 60) %></td>
-            <td class="px-4 py-3 text-xs text-gray-500"><%= follow_up.scheduled_at.strftime("%d %b %Y, %I:%M %p") %></td>
-            <td class="px-4 py-3">
-              <%= follow_up_status_badge(follow_up.status) %>
-              <% if follow_up.failed? && follow_up.error_message.present? %>
-                <p class="text-[11px] text-red-500 mt-1"><%= truncate(follow_up.error_message, length: 40) %></p>
+              <p class="text-xs font-medium text-gray-900"><%= campaign.name.presence || campaign.whatsapp_template.name %></p>
+              <% if campaign.name.present? %>
+                <p class="text-[11px] text-gray-400"><%= campaign.whatsapp_template.name %></p>
               <% end %>
+            </td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-700">
+                <%= campaign.total_contacts %> contacts
+              </span>
+            </td>
+            <td class="px-4 py-3 text-xs text-gray-500"><%= campaign.scheduled_at.strftime("%d %b %Y, %I:%M %p") %></td>
+            <td class="px-4 py-3">
+              <% colors = case campaign.status
+                when "pending" then "bg-yellow-50 text-yellow-700 border-yellow-200"
+                when "processing" then "bg-blue-50 text-blue-700 border-blue-200"
+                when "completed" then "bg-green-50 text-green-700 border-green-200"
+                when "cancelled" then "bg-gray-50 text-gray-700 border-gray-200"
+                else "bg-gray-50 text-gray-700 border-gray-200"
+                end %>
+              <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium <%= colors %>">
+                <%= campaign.status.titleize %>
+              </span>
             </td>
             <td class="px-4 py-3 text-right">
               <div class="flex items-center justify-end gap-1">
-                <% if follow_up.pending? %>
-                  <%= link_to cancel_follow_up_path(follow_up), data: { turbo_method: :patch, turbo_confirm: "Cancel this follow-up?" }, class: "h-8 w-8 rounded-full hover:bg-yellow-50 flex items-center justify-center transition", title: "Cancel" do %>
+                <%# View Analytics %>
+                <%= link_to follow_up_campaign_path(campaign), class: "h-8 w-8 rounded-full hover:bg-indigo-50 flex items-center justify-center transition", title: "View Analytics" do %>
+                  <svg class="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125z" /></svg>
+                <% end %>
+
+                <%# Cancel (if pending) %>
+                <% if campaign.pending? %>
+                  <%= link_to cancel_follow_up_campaign_path(campaign), data: { turbo_method: :patch, turbo_confirm: "Cancel this campaign?" }, class: "h-8 w-8 rounded-full hover:bg-yellow-50 flex items-center justify-center transition", title: "Cancel" do %>
                     <svg class="h-4 w-4 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
                   <% end %>
                 <% end %>
-                <%= link_to follow_up_path(follow_up), data: { turbo_method: :delete, turbo_confirm: "Delete this follow-up?" }, class: "h-8 w-8 rounded-full hover:bg-red-50 flex items-center justify-center transition", title: "Delete" do %>
+
+                <%# Delete %>
+                <%= link_to follow_up_campaign_path(campaign), data: { turbo_method: :delete, turbo_confirm: "Delete this campaign and all its contacts?" }, class: "h-8 w-8 rounded-full hover:bg-red-50 flex items-center justify-center transition", title: "Delete" do %>
                   <svg class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
                 <% end %>
               </div>
@@ -72,8 +92,8 @@
     </div>
   <% else %>
     <div class="p-8 text-center">
-      <p class="text-xs text-gray-500">No follow-ups found.</p>
-      <p class="text-xs text-gray-400 mt-1"><%= link_to "Schedule a follow-up", new_follow_up_path, class: "text-indigo-600 hover:text-indigo-500" %> to get started.</p>
+      <p class="text-xs text-gray-500">No campaigns found.</p>
+      <p class="text-xs text-gray-400 mt-1"><%= link_to "Create a campaign", new_follow_up_path, class: "text-indigo-600 hover:text-indigo-500" %> to get started.</p>
     </div>
   <% end %>
 </div>

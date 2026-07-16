@@ -96,6 +96,29 @@ class WhatsappWebhooksController < ActionController::Base
     end
 
     broadcast_message_status_update(message)
+
+    # Update campaign contact status if this message belongs to a campaign
+    update_campaign_contact_status(whatsapp_id, mapped)
+  end
+
+  def update_campaign_contact_status(whatsapp_id, status)
+    contact = FollowUpCampaignContact.find_by(whatsapp_message_id: whatsapp_id)
+    return unless contact
+
+    case status
+    when :sent
+      contact.update!(status: :sent, sent_at: Time.current) if contact.queued? || contact.accepted?
+    when :delivered
+      contact.update!(status: :delivered, delivered_at: Time.current) unless contact.read?
+    when :read
+      contact.update!(status: :read, read_at: Time.current)
+    when :failed
+      contact.update!(status: :failed)
+    end
+
+    contact.follow_up_campaign.update_counts!
+  rescue => e
+    Rails.logger.error "[WhatsApp Webhook] Campaign contact status update error: #{e.message}"
   end
 
   def process_incoming_messages(data)

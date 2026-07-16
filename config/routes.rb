@@ -116,6 +116,12 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :follow_up_campaigns, only: [:show, :destroy], path: "follow-up-campaigns" do
+    member do
+      patch :cancel
+    end
+  end
+
   resources :csat, only: [:index] do
     collection do
       post :generate_link

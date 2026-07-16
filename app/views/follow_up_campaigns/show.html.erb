@@ -1,0 +1,137 @@
+<% content_for :page_title, "Campaign Analytics" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900"><%= @campaign.name.presence || @campaign.whatsapp_template.name %></h2>
+    <p class="text-xs text-gray-500 mt-1">
+      Template: <span class="font-medium"><%= @campaign.whatsapp_template.name %></span>
+      &middot; Scheduled: <span class="font-medium"><%= @campaign.scheduled_at.strftime("%d %b %Y, %I:%M %p") %></span>
+      &middot;
+      <% colors = case @campaign.status
+        when "pending" then "bg-yellow-50 text-yellow-700 border-yellow-200"
+        when "processing" then "bg-blue-50 text-blue-700 border-blue-200"
+        when "completed" then "bg-green-50 text-green-700 border-green-200"
+        when "cancelled" then "bg-gray-50 text-gray-700 border-gray-200"
+        else "bg-gray-50 text-gray-700 border-gray-200"
+        end %>
+      <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium <%= colors %>"><%= @campaign.status.titleize %></span>
+    </p>
+  </div>
+  <%= link_to follow_ups_path, class: "rounded-lg border border-gray-300 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" do %>
+    &larr; Back to Campaigns
+  <% end %>
+</div>
+
+<% if @analytics.present? %>
+  <%# Stats Cards Grid %>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <%# Total Contacts %>
+    <div class="rounded-xl border border-gray-200 bg-white p-4">
+      <p class="text-[11px] font-medium text-gray-500 uppercase">Total Contacts</p>
+      <p class="text-2xl font-bold text-gray-900 mt-1"><%= @analytics[:total_contacts] %></p>
+    </div>
+
+    <%# Delivered %>
+    <div class="rounded-xl border border-green-200 bg-green-50 p-4">
+      <p class="text-[11px] font-medium text-green-600 uppercase">Delivered</p>
+      <p class="text-2xl font-bold text-green-700 mt-1"><%= @analytics[:delivered][:count] %></p>
+      <p class="text-[11px] text-green-600 mt-0.5"><%= @analytics[:delivered][:pct] %>%</p>
+    </div>
+
+    <%# Read %>
+    <div class="rounded-xl border border-blue-200 bg-blue-50 p-4">
+      <p class="text-[11px] font-medium text-blue-600 uppercase">Read</p>
+      <p class="text-2xl font-bold text-blue-700 mt-1"><%= @analytics[:read][:count] %></p>
+      <p class="text-[11px] text-blue-600 mt-0.5"><%= @analytics[:read][:pct] %>%</p>
+    </div>
+
+    <%# Failed %>
+    <div class="rounded-xl border border-red-200 bg-red-50 p-4">
+      <p class="text-[11px] font-medium text-red-600 uppercase">Failed</p>
+      <p class="text-2xl font-bold text-red-700 mt-1"><%= @analytics[:failed][:count] %></p>
+      <p class="text-[11px] text-red-600 mt-0.5"><%= @analytics[:failed][:pct] %>%</p>
+    </div>
+
+    <%# Expired %>
+    <div class="rounded-xl border border-orange-200 bg-orange-50 p-4">
+      <p class="text-[11px] font-medium text-orange-600 uppercase">Expired</p>
+      <p class="text-2xl font-bold text-orange-700 mt-1"><%= @analytics[:expired][:count] %></p>
+      <p class="text-[11px] text-orange-600 mt-0.5"><%= @analytics[:expired][:pct] %>%</p>
+    </div>
+
+    <%# Sent %>
+    <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+      <p class="text-[11px] font-medium text-indigo-600 uppercase">Sent</p>
+      <p class="text-2xl font-bold text-indigo-700 mt-1"><%= @analytics[:sent][:count] %></p>
+      <p class="text-[11px] text-indigo-600 mt-0.5"><%= @analytics[:sent][:pct] %>%</p>
+    </div>
+
+    <%# In Queue %>
+    <div class="rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+      <p class="text-[11px] font-medium text-yellow-600 uppercase">In Queue</p>
+      <p class="text-2xl font-bold text-yellow-700 mt-1"><%= @analytics[:queued][:count] %></p>
+      <p class="text-[11px] text-yellow-600 mt-0.5"><%= @analytics[:queued][:pct] %>%</p>
+    </div>
+
+    <%# Accepted %>
+    <div class="rounded-xl border border-teal-200 bg-teal-50 p-4">
+      <p class="text-[11px] font-medium text-teal-600 uppercase">Accepted</p>
+      <p class="text-2xl font-bold text-teal-700 mt-1"><%= @analytics[:accepted][:count] %></p>
+      <p class="text-[11px] text-teal-600 mt-0.5"><%= @analytics[:accepted][:pct] %>%</p>
+    </div>
+  </div>
+<% end %>
+
+<%# Contacts Table %>
+<div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+  <div class="border-b border-gray-200 px-5 py-3">
+    <h3 class="text-sm font-semibold text-gray-900">Contacts (<%= @contacts.size %>)</h3>
+  </div>
+
+  <% if @contacts.any? %>
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead>
+        <tr class="bg-gray-50">
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Name</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Phone</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Status</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Sent At</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Delivered At</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Read At</th>
+          <th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase">Error</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @contacts.each do |contact| %>
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-4 py-3 text-xs font-medium text-gray-900"><%= contact.name.presence || "—" %></td>
+            <td class="px-4 py-3 text-xs text-gray-500"><%= contact.phone %></td>
+            <td class="px-4 py-3">
+              <% contact_colors = case contact.status
+                when "queued" then "bg-gray-50 text-gray-700 border-gray-200"
+                when "accepted" then "bg-teal-50 text-teal-700 border-teal-200"
+                when "sent" then "bg-indigo-50 text-indigo-700 border-indigo-200"
+                when "delivered" then "bg-green-50 text-green-700 border-green-200"
+                when "read" then "bg-blue-50 text-blue-700 border-blue-200"
+                when "failed" then "bg-red-50 text-red-700 border-red-200"
+                when "expired" then "bg-orange-50 text-orange-700 border-orange-200"
+                else "bg-gray-50 text-gray-700 border-gray-200"
+                end %>
+              <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium <%= contact_colors %>">
+                <%= contact.status.titleize %>
+              </span>
+            </td>
+            <td class="px-4 py-3 text-[11px] text-gray-500"><%= contact.sent_at&.strftime("%d %b %H:%M") || "—" %></td>
+            <td class="px-4 py-3 text-[11px] text-gray-500"><%= contact.delivered_at&.strftime("%d %b %H:%M") || "—" %></td>
+            <td class="px-4 py-3 text-[11px] text-gray-500"><%= contact.read_at&.strftime("%d %b %H:%M") || "—" %></td>
+            <td class="px-4 py-3 text-[11px] text-red-500"><%= contact.error_message.present? ? truncate(contact.error_message, length: 40) : "—" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="p-8 text-center">
+      <p class="text-xs text-gray-500">No contacts in this campaign.</p>
+    </div>
+  <% end %>
+</div>

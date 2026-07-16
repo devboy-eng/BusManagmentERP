@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_15_100000) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_16_100000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -89,6 +89,41 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_15_100000) do
     t.string "trademark"
     t.integer "status"
     t.integer "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "follow_up_campaign_contacts", force: :cascade do |t|
+    t.integer "follow_up_campaign_id", null: false
+    t.integer "lead_id"
+    t.string "name"
+    t.string "phone", null: false
+    t.integer "status", default: 0
+    t.string "whatsapp_message_id"
+    t.text "error_message"
+    t.datetime "sent_at"
+    t.datetime "delivered_at"
+    t.datetime "read_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["follow_up_campaign_id"], name: "index_follow_up_campaign_contacts_on_follow_up_campaign_id"
+    t.index ["lead_id"], name: "index_follow_up_campaign_contacts_on_lead_id"
+    t.index ["status"], name: "index_follow_up_campaign_contacts_on_status"
+  end
+
+  create_table "follow_up_campaigns", force: :cascade do |t|
+    t.string "name"
+    t.integer "whatsapp_template_id", null: false
+    t.text "template_variables"
+    t.datetime "scheduled_at", null: false
+    t.integer "status", default: 0
+    t.integer "user_id"
+    t.integer "total_contacts", default: 0
+    t.integer "sent_count", default: 0
+    t.integer "delivered_count", default: 0
+    t.integer "read_count", default: 0
+    t.integer "failed_count", default: 0
+    t.integer "expired_count", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

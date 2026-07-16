@@ -1,33 +1,50 @@
 <div class="space-y-5">
   <div>
-    <h4 class="text-sm font-semibold text-gray-900 mb-1">Scheduled Follow-ups</h4>
-    <p class="text-xs text-gray-500 leading-relaxed">Schedule WhatsApp follow-up messages to leads. The system automatically sends the message at the scheduled time, even when you are away.</p>
+    <h4 class="text-sm font-semibold text-gray-900 mb-1">Follow-up Campaigns</h4>
+    <p class="text-xs text-gray-500 leading-relaxed">Schedule WhatsApp template campaigns to multiple recipients at once. Select leads, upload a CSV of contacts, pick an approved template, and schedule the send. Track delivery analytics after sending.</p>
   </div>
 
   <div>
     <h5 class="text-xs font-semibold text-gray-800 mb-2">How to Use</h5>
     <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
-      <li><strong>Schedule:</strong> Click "Schedule Follow-up", select a lead, write your message, and pick a date & time</li>
-      <li><strong>Filter:</strong> Use the status tabs (All, Pending, Sent, Failed, Cancelled) to filter your list</li>
-      <li><strong>Cancel:</strong> Click "Cancel" on a pending follow-up to prevent it from being sent</li>
-      <li><strong>Delete:</strong> Remove a follow-up record — this does not unsend already-delivered messages</li>
+      <li><strong>Create Campaign:</strong> Click "New Campaign", select recipients, choose an approved template, set the schedule, and submit</li>
+      <li><strong>Select Leads:</strong> Use the "Select Leads" tab to pick multiple leads from your database. Use the search bar to filter by name or phone, and "Select All" / "Deselect All" buttons for bulk selection</li>
+      <li><strong>Upload CSV:</strong> Use the "Upload CSV" tab to upload a CSV file with "name" and "phone" columns. The parsed contacts are previewed before scheduling</li>
+      <li><strong>Template Preview:</strong> When you select a template, a live WhatsApp phone mockup shows exactly how the message will appear, including header, body, footer, and buttons</li>
+      <li><strong>Template Variables:</strong> If the template contains variables like {{1}}, {{2}}, input fields appear. Values you type are reflected live in the preview</li>
+      <li><strong>View Analytics:</strong> Click the analytics icon on any campaign to see delivery stats — Total Contacts, Delivered, Read, Failed, Expired, Sent, In Queue, and Accepted</li>
+      <li><strong>Cancel:</strong> Cancel a pending campaign before its scheduled time to prevent sending</li>
+      <li><strong>Delete:</strong> Remove a campaign record — this does not unsend already-delivered messages</li>
     </ul>
   </div>
 
   <div>
-    <h5 class="text-xs font-semibold text-gray-800 mb-2">Message Statuses</h5>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">CSV Format</h5>
+    <div class="rounded-lg bg-gray-50 border border-gray-200 p-3">
+      <p class="text-[11px] text-gray-600 mb-2">Your CSV file must have the following columns:</p>
+      <div class="bg-white rounded border border-gray-200 p-2 font-mono text-[11px] text-gray-700">
+        name,phone<br>
+        John Doe,9876543210<br>
+        Jane Smith,9123456789
+      </div>
+      <p class="text-[11px] text-gray-500 mt-2">The "phone" column is required. The "name" column is optional but recommended.</p>
+    </div>
+  </div>
+
+  <div>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">Campaign Statuses</h5>
     <div class="space-y-2">
       <div class="flex items-start gap-3">
         <span class="inline-flex items-center rounded-full bg-yellow-50 border border-yellow-200 px-2.5 py-0.5 text-[11px] font-medium text-yellow-700 flex-shrink-0 mt-0.5">Pending</span>
         <span class="text-xs text-gray-600">Waiting to be sent at the scheduled time</span>
       </div>
       <div class="flex items-start gap-3">
-        <span class="inline-flex items-center rounded-full bg-green-50 border border-green-200 px-2.5 py-0.5 text-[11px] font-medium text-green-700 flex-shrink-0 mt-0.5">Sent</span>
-        <span class="text-xs text-gray-600">Successfully delivered via WhatsApp API</span>
+        <span class="inline-flex items-center rounded-full bg-blue-50 border border-blue-200 px-2.5 py-0.5 text-[11px] font-medium text-blue-700 flex-shrink-0 mt-0.5">Processing</span>
+        <span class="text-xs text-gray-600">Currently sending messages to all contacts</span>
       </div>
       <div class="flex items-start gap-3">
-        <span class="inline-flex items-center rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[11px] font-medium text-red-700 flex-shrink-0 mt-0.5">Failed</span>
-        <span class="text-xs text-gray-600">Could not be delivered — check the error message</span>
+        <span class="inline-flex items-center rounded-full bg-green-50 border border-green-200 px-2.5 py-0.5 text-[11px] font-medium text-green-700 flex-shrink-0 mt-0.5">Completed</span>
+        <span class="text-xs text-gray-600">All messages have been sent (check analytics for individual delivery status)</span>
       </div>
       <div class="flex items-start gap-3">
         <span class="inline-flex items-center rounded-full bg-gray-100 border border-gray-200 px-2.5 py-0.5 text-[11px] font-medium text-gray-600 flex-shrink-0 mt-0.5">Cancelled</span>
@@ -37,12 +54,49 @@
   </div>
 
   <div>
+    <h5 class="text-xs font-semibold text-gray-800 mb-2">Contact Delivery Statuses</h5>
+    <div class="space-y-2">
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-gray-50 border border-gray-200 px-2.5 py-0.5 text-[11px] font-medium text-gray-700 flex-shrink-0 mt-0.5">Queued</span>
+        <span class="text-xs text-gray-600">Waiting to be processed</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-teal-50 border border-teal-200 px-2.5 py-0.5 text-[11px] font-medium text-teal-700 flex-shrink-0 mt-0.5">Accepted</span>
+        <span class="text-xs text-gray-600">Accepted by WhatsApp servers</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 text-[11px] font-medium text-indigo-700 flex-shrink-0 mt-0.5">Sent</span>
+        <span class="text-xs text-gray-600">Message sent to the recipient's device</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-green-50 border border-green-200 px-2.5 py-0.5 text-[11px] font-medium text-green-700 flex-shrink-0 mt-0.5">Delivered</span>
+        <span class="text-xs text-gray-600">Delivered to the recipient's phone</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-blue-50 border border-blue-200 px-2.5 py-0.5 text-[11px] font-medium text-blue-700 flex-shrink-0 mt-0.5">Read</span>
+        <span class="text-xs text-gray-600">Recipient has read the message</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[11px] font-medium text-red-700 flex-shrink-0 mt-0.5">Failed</span>
+        <span class="text-xs text-gray-600">Could not be delivered — check the error message</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-full bg-orange-50 border border-orange-200 px-2.5 py-0.5 text-[11px] font-medium text-orange-700 flex-shrink-0 mt-0.5">Expired</span>
+        <span class="text-xs text-gray-600">Message expired before delivery (recipient offline too long)</span>
+      </div>
+    </div>
+  </div>
+
+  <div>
     <h5 class="text-xs font-semibold text-gray-800 mb-2">Rules & Limits</h5>
     <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-4">
-      <li>Follow-ups can only be scheduled for a <strong>future date and time</strong></li>
-      <li>Each follow-up must be linked to a valid <strong>lead with a phone number</strong></li>
-      <li>If the lead hasn't messaged within 24 hours, Meta may reject the message — consider using templates</li>
-      <li>Follow-ups are processed every <strong>1 minute</strong> — slight delay (up to 60 seconds) is normal</li>
+      <li>Campaigns can only be scheduled for a <strong>future date and time</strong></li>
+      <li>At least <strong>one recipient</strong> is required (from leads or CSV)</li>
+      <li>Only <strong>Meta-approved templates</strong> can be used — draft or rejected templates are not shown</li>
+      <li>Templates are sent outside the 24-hour window, so they <strong>do not require a prior customer message</strong></li>
+      <li>CSV contacts without a matching lead are sent directly without conversation logging</li>
+      <li>Campaigns are processed every <strong>1 minute</strong> — slight delay (up to 60 seconds) is normal</li>
+      <li>Delivery statuses (delivered, read) are updated automatically via <strong>WhatsApp webhooks</strong></li>
       <li>WhatsApp API must be <strong>configured and active</strong> in Settings for delivery</li>
     </ul>
   </div>
@@ -51,20 +105,24 @@
     <h5 class="text-xs font-semibold text-red-700 mb-2">Common Errors</h5>
     <div class="space-y-2">
       <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"Please select an approved template"</p>
+        <p class="text-[11px] text-red-600 mt-1">No template was selected. Choose an approved template from the dropdown.</p>
+      </div>
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
+        <p class="text-xs font-semibold text-red-800">"Please select at least one recipient"</p>
+        <p class="text-[11px] text-red-600 mt-1">No leads were selected and no CSV was uploaded. Select leads or upload a CSV file with contacts.</p>
+      </div>
+      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
         <p class="text-xs font-semibold text-red-800">"Scheduled time must be in the future"</p>
         <p class="text-[11px] text-red-600 mt-1">You selected a date/time that has already passed. Choose a future date and time.</p>
       </div>
       <div class="rounded-lg bg-red-50 border border-red-100 p-3">
-        <p class="text-xs font-semibold text-red-800">"Lead phone number is missing"</p>
-        <p class="text-[11px] text-red-600 mt-1">The selected lead does not have a phone number. Update the lead's contact details first.</p>
-      </div>
-      <div class="rounded-lg bg-red-50 border border-red-100 p-3">
         <p class="text-xs font-semibold text-red-800">"Failed: WhatsApp API error"</p>
-        <p class="text-[11px] text-red-600 mt-1">Common causes: expired access token, invalid phone number format, or rate limits exceeded.</p>
+        <p class="text-[11px] text-red-600 mt-1">Common causes: expired access token, invalid phone number format, or rate limits exceeded. Check individual contact errors in the analytics page.</p>
       </div>
       <div class="rounded-lg bg-red-50 border border-red-100 p-3">
-        <p class="text-xs font-semibold text-red-800">"Failed: Recipient not on WhatsApp"</p>
-        <p class="text-[11px] text-red-600 mt-1">The phone number is not registered on WhatsApp. Verify the number and country code.</p>
+        <p class="text-xs font-semibold text-red-800">CSV: "phone" column not found</p>
+        <p class="text-[11px] text-red-600 mt-1">The uploaded CSV file does not have a column named "phone". Ensure the first row contains headers including "phone".</p>
       </div>
     </div>
   </div>

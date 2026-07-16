@@ -1,5 +1,6 @@
 class WhatsappTemplate < ApplicationRecord
   belongs_to :user
+  has_many :follow_up_campaigns
 
   STATUSES = %w[draft pending approved rejected paused disabled].freeze
 
@@ -67,6 +68,7 @@ class WhatsappTemplate < ApplicationRecord
   validate :validate_buttons
 
   scope :ordered, -> { order(created_at: :desc) }
+  scope :approved, -> { where(status: "approved") }
 
   def language_name
     LANGUAGES[language] || language
