@@ -28,10 +28,11 @@ class ProcessFollowUpCampaignsJob < ApplicationJob
   end
 
   def send_to_contact(service, template, variables, contact, user)
-    # If the contact has a lead, use send_template_and_log for conversation tracking
-    if contact.lead.present?
+    # If the contact has a lead or customer, use send_template_and_log for conversation tracking
+    if contact.lead.present? || contact.customer.present?
+      recipient = contact.lead || contact.customer
       outcome = service.send_template_and_log(
-        recipient: contact.lead,
+        recipient: recipient,
         template: template,
         variables: variables,
         user: user

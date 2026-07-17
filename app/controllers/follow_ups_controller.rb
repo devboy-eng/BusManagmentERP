@@ -11,6 +11,7 @@ class FollowUpsController < ApplicationController
 
   def new
     @leads = Lead.order(:name)
+    @customers = Customer.active.order(:name)
     @templates = WhatsappTemplate.approved.ordered
   end
 
@@ -18,6 +19,7 @@ class FollowUpsController < ApplicationController
     template = WhatsappTemplate.find_by(id: params[:template_id])
     unless template
       @leads = Lead.order(:name)
+      @customers = Customer.active.order(:name)
       @templates = WhatsappTemplate.approved.ordered
       flash.now[:alert] = "Please select an approved template."
       render :new, status: :unprocessable_entity
@@ -40,6 +42,13 @@ class FollowUpsController < ApplicationController
       end
     end
 
+    # Collect contacts from selected customers
+    if params[:customer_ids].present?
+      Customer.where(id: params[:customer_ids]).each do |customer|
+        contacts_data << { customer: customer, name: customer.name, phone: customer.phone }
+      end
+    end
+
     # Collect contacts from CSV upload
     if params[:csv_contacts].present?
       params[:csv_contacts].each do |csv_contact|
@@ -50,6 +59,7 @@ class FollowUpsController < ApplicationController
 
     if contacts_data.empty?
       @leads = Lead.order(:name)
+      @customers = Customer.active.order(:name)
       @templates = WhatsappTemplate.approved.ordered
       flash.now[:alert] = "Please select at least one recipient."
       render :new, status: :unprocessable_entity
@@ -60,6 +70,7 @@ class FollowUpsController < ApplicationController
       contacts_data.each do |cd|
         campaign.contacts.create!(
           lead: cd[:lead],
+          customer: cd[:customer],
           name: cd[:name],
           phone: cd[:phone]
         )
@@ -69,6 +80,7 @@ class FollowUpsController < ApplicationController
       redirect_to follow_ups_path, notice: "Campaign scheduled with #{contacts_data.size} recipients."
     else
       @leads = Lead.order(:name)
+      @customers = Customer.active.order(:name)
       @templates = WhatsappTemplate.approved.ordered
       flash.now[:alert] = campaign.errors.full_messages.join(", ")
       render :new, status: :unprocessable_entity

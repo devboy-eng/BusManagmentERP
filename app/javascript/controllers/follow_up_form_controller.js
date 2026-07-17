@@ -4,6 +4,7 @@ export default class extends Controller {
   static targets = [
     "tab", "tabPanel",
     "leadSearch", "leadsList", "leadCheckbox", "recipientCount",
+    "customerSearch", "customersList", "customerCheckbox",
     "csvFile", "csvPreview", "csvTableBody",
     "templateSelect", "variablesSection", "variableInputs",
     "previewEmpty", "previewBubble", "previewMedia", "previewMediaLabel",
@@ -64,10 +65,39 @@ export default class extends Controller {
     this.updateRecipientCount()
   }
 
+  // ---- Customer Filtering ----
+  filterCustomers() {
+    const query = this.customerSearchTarget.value.toLowerCase()
+    const items = this.customersListTarget.querySelectorAll(".customer-item")
+
+    items.forEach(item => {
+      const name = item.dataset.name || ""
+      const phone = item.dataset.phone || ""
+      const match = name.includes(query) || phone.includes(query)
+      item.classList.toggle("hidden", !match)
+    })
+  }
+
+  selectAllCustomers() {
+    this.customerCheckboxTargets.forEach(cb => {
+      const item = cb.closest(".customer-item")
+      if (!item.classList.contains("hidden")) {
+        cb.checked = true
+      }
+    })
+    this.updateRecipientCount()
+  }
+
+  deselectAllCustomers() {
+    this.customerCheckboxTargets.forEach(cb => { cb.checked = false })
+    this.updateRecipientCount()
+  }
+
   updateRecipientCount() {
     const leadCount = this.hasLeadCheckboxTarget ? this.leadCheckboxTargets.filter(cb => cb.checked).length : 0
+    const customerCount = this.hasCustomerCheckboxTarget ? this.customerCheckboxTargets.filter(cb => cb.checked).length : 0
     const csvCount = (this.csvContacts || []).length
-    const total = leadCount + csvCount
+    const total = leadCount + customerCount + csvCount
     if (this.hasRecipientCountTarget) {
       this.recipientCountTarget.textContent = `${total} selected`
     }
