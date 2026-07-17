@@ -118,12 +118,12 @@
             <% @templates.each do |template| %>
               <% var_count = template.category == "authentication" ? 1 : template.body.scan(/\{\{\d+\}\}/).size %>
               <option value="<%= template.id %>"
-                      data-body="<%= j template.body %>"
+                      data-body="<%= h template.body %>"
                       data-header-type="<%= template.header_type %>"
-                      data-header-text="<%= j(template.header_text.to_s) %>"
-                      data-footer="<%= j(template.footer.to_s) %>"
+                      data-header-text="<%= h(template.header_text.to_s) %>"
+                      data-footer="<%= h(template.footer.to_s) %>"
                       data-category="<%= template.category %>"
-                      data-buttons="<%= j(template.parsed_buttons.to_json) %>"
+                      data-buttons="<%= h(template.parsed_buttons.to_json) %>"
                       data-vars="<%= var_count %>"><%= template.name %> (<%= template.category&.titleize %>)</option>
             <% end %>
           </select>
