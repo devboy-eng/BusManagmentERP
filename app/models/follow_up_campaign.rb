@@ -32,6 +32,9 @@ class FollowUpCampaign < ApplicationRecord
     total = total_contacts.to_i
     return {} if total.zero?
 
+    queued_count = Rails.cache.fetch("campaign/#{id}/queued_count", expires_in: 2.minutes) { contacts.where(status: :queued).count }
+    accepted_count = Rails.cache.fetch("campaign/#{id}/accepted_count", expires_in: 2.minutes) { contacts.where(status: :accepted).count }
+
     {
       total_contacts: total,
       delivered: { count: delivered_count, pct: (delivered_count * 100.0 / total).round(1) },
@@ -39,8 +42,8 @@ class FollowUpCampaign < ApplicationRecord
       failed: { count: failed_count, pct: (failed_count * 100.0 / total).round(1) },
       expired: { count: expired_count, pct: (expired_count * 100.0 / total).round(1) },
       sent: { count: sent_count, pct: (sent_count * 100.0 / total).round(1) },
-      queued: { count: contacts.where(status: :queued).count, pct: (contacts.where(status: :queued).count * 100.0 / total).round(1) },
-      accepted: { count: contacts.where(status: :accepted).count, pct: (contacts.where(status: :accepted).count * 100.0 / total).round(1) }
+      queued: { count: queued_count, pct: (queued_count * 100.0 / total).round(1) },
+      accepted: { count: accepted_count, pct: (accepted_count * 100.0 / total).round(1) }
     }
   end
 

@@ -10,17 +10,13 @@ class FollowUpsController < ApplicationController
   end
 
   def new
-    @leads = Lead.whatsapp_opted_in.order(:name)
-    @customers = Customer.active.whatsapp_opted_in.order(:name)
-    @templates = WhatsappTemplate.approved.ordered
+    load_form_data
   end
 
   def create
     template = WhatsappTemplate.find_by(id: params[:template_id])
     unless template
-      @leads = Lead.whatsapp_opted_in.order(:name)
-      @customers = Customer.active.whatsapp_opted_in.order(:name)
-      @templates = WhatsappTemplate.approved.ordered
+      load_form_data
       flash.now[:alert] = "Please select an approved template."
       render :new, status: :unprocessable_entity
       return
@@ -65,9 +61,7 @@ class FollowUpsController < ApplicationController
     end
 
     if contacts_data.empty?
-      @leads = Lead.whatsapp_opted_in.order(:name)
-      @customers = Customer.active.whatsapp_opted_in.order(:name)
-      @templates = WhatsappTemplate.approved.ordered
+      load_form_data
       flash.now[:alert] = "Please select at least one recipient."
       render :new, status: :unprocessable_entity
       return
@@ -86,9 +80,7 @@ class FollowUpsController < ApplicationController
 
       redirect_to follow_ups_path, notice: "Campaign scheduled with #{contacts_data.size} recipients."
     else
-      @leads = Lead.whatsapp_opted_in.order(:name)
-      @customers = Customer.active.whatsapp_opted_in.order(:name)
-      @templates = WhatsappTemplate.approved.ordered
+      load_form_data
       flash.now[:alert] = campaign.errors.full_messages.join(", ")
       render :new, status: :unprocessable_entity
     end
@@ -117,5 +109,13 @@ class FollowUpsController < ApplicationController
     else
       redirect_to follow_ups_path, alert: "Follow-up not found."
     end
+  end
+
+  private
+
+  def load_form_data
+    @leads = Rails.cache.fetch("follow_ups/opted_in_leads", expires_in: 5.minutes) { Lead.whatsapp_opted_in.order(:name).to_a }
+    @customers = Rails.cache.fetch("follow_ups/opted_in_customers", expires_in: 5.minutes) { Customer.active.whatsapp_opted_in.order(:name).to_a }
+    @templates = Rails.cache.fetch("follow_ups/approved_templates", expires_in: 5.minutes) { WhatsappTemplate.approved.ordered.to_a }
   end
 end
