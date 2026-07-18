@@ -60,8 +60,9 @@ class User < ApplicationRecord
 
   def can_access?(feature)
     return true if super_admin?
+    return false if permissions.blank?
 
-    permissions&.dig(feature.to_s) != false
+    permissions[feature.to_s] == true
   end
 
   # --- OTP Methods ---
