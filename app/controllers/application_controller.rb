@@ -42,6 +42,12 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def require_super_admin!
+    unless current_user&.super_admin?
+      redirect_to root_path, alert: "You do not have access to this feature."
+    end
+  end
+
   def can_access?(feature)
     return true if current_user&.super_admin?
 

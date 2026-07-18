@@ -1,7 +1,9 @@
 class WhatsappSettingsController < ApplicationController
+  before_action :require_super_admin!, only: [:update]
+
   def edit
     @setting = WhatsappSetting.instance
-    load_phone_numbers
+    load_phone_numbers if current_user.super_admin?
   end
 
   def update
