@@ -32,9 +32,16 @@ class WhatsappTemplatesController < ApplicationController
   def destroy
     if @template.meta_template_id.present?
       begin
-        WhatsappService.new.delete_template(@template)
+        result = WhatsappService.new.delete_template(@template)
+        unless result[:success]
+          @template.destroy
+          redirect_to whatsapp_templates_path, notice: "Deleted locally, but failed to delete from Meta: #{result[:error]}"
+          return
+        end
       rescue => e
-        Rails.logger.warn("Failed to delete template from Meta: #{e.message}")
+        @template.destroy
+        redirect_to whatsapp_templates_path, notice: "Deleted locally, but Meta API error: #{e.message}"
+        return
       end
     end
     @template.destroy

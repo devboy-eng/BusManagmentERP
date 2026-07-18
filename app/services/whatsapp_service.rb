@@ -386,7 +386,7 @@ class WhatsappService
     response = HTTParty.delete(
       "#{BASE_URL}/#{@setting.business_account_id}/message_templates",
       headers: { "Authorization" => "Bearer #{@access_token}" },
-      query: { name: meta_name }
+      query: { hsm_id: template.meta_template_id, name: meta_name }
     )
 
     if response.success?
