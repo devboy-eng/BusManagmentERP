@@ -40,6 +40,21 @@ class WhatsappSettingsController < ApplicationController
     end
   end
 
+  def sync_quality
+    @setting = WhatsappSetting.instance
+
+    unless WhatsappSetting.configured?
+      redirect_to edit_whatsapp_setting_path, alert: "Please configure and activate WhatsApp settings first."
+      return
+    end
+
+    SyncWhatsappQualityJob.perform_now
+    @setting.reload
+    redirect_to edit_whatsapp_setting_path, notice: "Quality score synced: #{@setting.quality_rating || 'N/A'}"
+  rescue => e
+    redirect_to edit_whatsapp_setting_path, alert: "Quality sync failed: #{e.message}"
+  end
+
   private
 
   def load_phone_numbers

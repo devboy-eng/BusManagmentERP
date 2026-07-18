@@ -1,5 +1,9 @@
 class SendWhatsappTemplateJob < ApplicationJob
   queue_as :default
+  discard_on(WhatsappService::NonRetryableError) do |job, error|
+    Rails.logger.warn "[SendWhatsappTemplateJob] Discarded #{job.arguments.inspect}: #{error.message}"
+  end
+  retry_on WhatsappService::RateLimitError, wait: :polynomially_longer, attempts: 5
   retry_on WhatsappService::ApiError, wait: :polynomially_longer, attempts: 3
 
   def perform(recipient_type:, recipient_id:, template_id:, variables:, user_id:)

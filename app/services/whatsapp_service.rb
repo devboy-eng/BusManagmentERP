@@ -2,6 +2,8 @@ class WhatsappService
   BASE_URL = "https://graph.facebook.com/v25.0".freeze
 
   class ApiError < StandardError; end
+  class NonRetryableError < ApiError; end
+  class RateLimitError < ApiError; end
 
   def initialize
     @setting = WhatsappSetting.first
@@ -32,8 +34,7 @@ class WhatsappService
       message_id = response.parsed_response.dig("messages", 0, "id")
       { success: true, message_id: message_id }
     else
-      error = response.parsed_response.dig("error", "message") || "Unknown API error"
-      { success: false, error: error }
+      handle_api_error(response)
     end
   end
 
@@ -312,8 +313,7 @@ class WhatsappService
       message_id = response.parsed_response.dig("messages", 0, "id")
       { success: true, message_id: message_id }
     else
-      error = response.parsed_response.dig("error", "message") || "Unknown API error (#{response.code})"
-      { success: false, error: error }
+      handle_api_error(response)
     end
   end
 
@@ -441,7 +441,7 @@ class WhatsappService
     response = HTTParty.get(
       "#{BASE_URL}/#{business_account_id}/phone_numbers",
       headers: { "Authorization" => "Bearer #{access_token}" },
-      query: { fields: "id,display_phone_number,verified_name,quality_rating" }
+      query: { fields: "id,display_phone_number,verified_name,quality_rating,messaging_limit_tier,throughput" }
     )
 
     if response.success?
@@ -449,6 +449,37 @@ class WhatsappService
       { success: true, phone_numbers: phones }
     else
       error = response.parsed_response.dig("error", "message") || "Failed to fetch phone numbers"
+      { success: false, error: error }
+    end
+  end
+
+  def self.fetch_phone_details(access_token:, phone_number_id:)
+    response = HTTParty.get(
+      "#{BASE_URL}/#{phone_number_id}",
+      headers: { "Authorization" => "Bearer #{access_token}" },
+      query: { fields: "display_phone_number,verified_name,name_status,status,code_verification_status,platform_type" }
+    )
+
+    if response.success?
+      { success: true, data: response.parsed_response }
+    else
+      error = response.parsed_response.dig("error", "message") || "Failed to fetch phone details"
+      { success: false, error: error }
+    end
+  end
+
+  def self.fetch_business_profile(access_token:, phone_number_id:)
+    response = HTTParty.get(
+      "#{BASE_URL}/#{phone_number_id}/whatsapp_business_profile",
+      headers: { "Authorization" => "Bearer #{access_token}" },
+      query: { fields: "about,description,address,email,websites,vertical,profile_picture_url" }
+    )
+
+    if response.success?
+      profile = response.parsed_response.dig("data", 0) || {}
+      { success: true, data: profile }
+    else
+      error = response.parsed_response.dig("error", "message") || "Failed to fetch business profile"
       { success: false, error: error }
     end
   end
@@ -463,6 +494,29 @@ class WhatsappService
 
   def normalize_phone(phone)
     self.class.normalize_phone(phone)
+  end
+
+  NON_RETRYABLE_CODES = [
+    131026, 131047, 131048, 131049, 131056,
+    132000, 132001, 132005, 132012, 132015, 131031
+  ].freeze
+  RATE_LIMIT_CODES = [130429].freeze
+  RETRYABLE_CODES = [131053].freeze
+
+  def handle_api_error(response)
+    error_data = response.parsed_response&.dig("error") || {}
+    error_code = error_data["code"].to_i
+    error_message = error_data["message"] || "Unknown API error (#{response.code})"
+
+    if NON_RETRYABLE_CODES.include?(error_code)
+      raise NonRetryableError, error_message
+    elsif RATE_LIMIT_CODES.include?(error_code)
+      raise RateLimitError, error_message
+    elsif RETRYABLE_CODES.include?(error_code) || response.code >= 500
+      raise ApiError, error_message
+    else
+      { success: false, error: error_message }
+    end
   end
 
   def broadcast_new_message(conversation, message)

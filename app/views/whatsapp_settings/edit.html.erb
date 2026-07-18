@@ -1,153 +1,465 @@
 <% content_for :page_title, "WhatsApp Settings" %>
 
 <% meta_link_class = "rounded-lg bg-blue-50 px-2.5 py-2.5 text-[11px] font-medium text-blue-600 hover:bg-blue-100 transition whitespace-nowrap" %>
+<% input_class = "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
 
-<div class="max-w-2xl">
+<div class="max-w-6xl">
+
+  <!-- Page Header -->
   <div class="mb-6 flex items-center justify-between">
     <div>
-      <h2 class="text-lg font-semibold text-gray-900">WhatsApp Cloud API Configuration</h2>
-      <p class="text-xs text-gray-500 mt-1">Configure your Meta WhatsApp Business API credentials</p>
+      <h2 class="text-lg font-semibold text-gray-900">WhatsApp Settings</h2>
+      <p class="text-xs text-gray-500 mt-1">Manage your WhatsApp Business API configuration and monitor account health</p>
     </div>
     <%= render "shared/guide_button", section: "settings" %>
   </div>
 
-  <div class="rounded-xl border border-gray-200 bg-white p-6">
-    <%= form_with(model: @setting, url: whatsapp_setting_path, method: :patch) do |f| %>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number ID</label>
-          <% if @phone_numbers&.any? %>
-            <div class="flex gap-2">
-              <%= f.select :phone_number_id,
-                    @phone_numbers.map { |pn| ["#{pn['display_phone_number']} — #{pn['verified_name']} (#{pn['quality_rating']})", pn['id']] },
-                    { prompt: "Select a phone number" },
-                    class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
-              <a href="https://developers.facebook.com/apps/<%= @setting.app_id.presence || '{app-id}' %>/whatsapp-business/wa-dev-console/" target="_blank" class="<%= meta_link_class %>">API Setup</a>
+  <!-- Connection Status + Quality Overview -->
+  <% if @setting.active? && @setting.phone_number_id.present? %>
+    <div class="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <!-- Status -->
+      <div class="rounded-xl border border-gray-200 bg-white p-4">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
+            <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[11px] font-medium text-gray-500">Status</p>
+            <p class="text-sm font-semibold text-green-700">Connected</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quality Rating -->
+      <div class="rounded-xl border border-gray-200 bg-white p-4">
+        <div class="flex items-center gap-3">
+          <% if @setting.quality_rating.present? %>
+            <% quality_icon_colors = { "GREEN" => ["green-50", "green-600"], "YELLOW" => ["yellow-50", "yellow-600"], "RED" => ["red-50", "red-600"] } %>
+            <% icon_bg, icon_color = quality_icon_colors[@setting.quality_rating.upcase] || ["gray-50", "gray-600"] %>
+            <div class="h-10 w-10 rounded-xl bg-<%= icon_bg %> flex items-center justify-center flex-shrink-0">
+              <svg class="h-5 w-5 text-<%= icon_color %>" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+              </svg>
             </div>
-            <p class="mt-1 text-[11px] text-gray-400">Select the phone number to use for sending messages</p>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium text-gray-500">Quality</p>
+              <% quality_text_colors = { "GREEN" => "text-green-700", "YELLOW" => "text-yellow-700", "RED" => "text-red-700" } %>
+              <p class="text-sm font-semibold <%= quality_text_colors[@setting.quality_rating.upcase] || 'text-gray-900' %>"><%= @setting.quality_rating.titleize %></p>
+            </div>
           <% else %>
-            <div class="flex gap-2">
-              <%= f.text_field :phone_number_id, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
-              <a href="https://developers.facebook.com/apps/<%= @setting.app_id.presence || '{app-id}' %>/whatsapp-business/wa-dev-console/" target="_blank" class="<%= meta_link_class %>">API Setup</a>
+            <div class="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0">
+              <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+              </svg>
             </div>
-            <p class="mt-1 text-[11px] text-gray-400">Enter manually, or save Access Token + Business Account ID to see available numbers</p>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium text-gray-500">Quality</p>
+              <p class="text-sm font-semibold text-gray-400">Not synced</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Messaging Limit -->
+      <div class="rounded-xl border border-gray-200 bg-white p-4">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+            <svg class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[11px] font-medium text-gray-500">Msg Limit</p>
+            <p class="text-sm font-semibold text-gray-900"><%= @setting.messaging_limit.presence || "—" %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- LEFT COLUMN -->
+    <div class="space-y-6">
+
+      <!-- API Credentials -->
+      <div class="rounded-xl border border-gray-200 bg-white p-5">
+        <div class="flex items-center gap-2.5 mb-4">
+          <div class="h-8 w-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+            <svg class="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900">API Credentials</h3>
+            <p class="text-[11px] text-gray-400">Meta WhatsApp Cloud API keys</p>
+          </div>
+        </div>
+
+        <%= form_with(model: @setting, url: whatsapp_setting_path, method: :patch) do |f| %>
+          <div class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone Number ID</label>
+              <% if @phone_numbers&.any? %>
+                <div class="flex gap-2">
+                  <%= f.select :phone_number_id,
+                        @phone_numbers.map { |pn| ["#{pn['display_phone_number']} — #{pn['verified_name']} (#{pn['quality_rating']})", pn['id']] },
+                        { prompt: "Select a phone number" },
+                        class: "flex-1 min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+                  <a href="https://developers.facebook.com/apps/<%= @setting.app_id.presence || '{app-id}' %>/whatsapp-business/wa-dev-console/" target="_blank" class="<%= meta_link_class %>">API Setup</a>
+                </div>
+                <p class="mt-1 text-[11px] text-gray-400">Select the phone number for sending messages</p>
+              <% else %>
+                <div class="flex gap-2">
+                  <%= f.text_field :phone_number_id, class: "flex-1 min-w-0 #{input_class}", placeholder: "e.g. 1234567890" %>
+                  <a href="https://developers.facebook.com/apps/<%= @setting.app_id.presence || '{app-id}' %>/whatsapp-business/wa-dev-console/" target="_blank" class="<%= meta_link_class %>">API Setup</a>
+                </div>
+                <p class="mt-1 text-[11px] text-gray-400">Save Access Token + Business Account ID to see available numbers</p>
+              <% end %>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Access Token</label>
+              <div class="flex gap-2">
+                <%= f.text_field :access_token, class: "flex-1 min-w-0 #{input_class}", placeholder: "Your permanent access token" %>
+                <a href="https://business.facebook.com/settings/system-users/" target="_blank" class="<%= meta_link_class %>">System Users</a>
+                <% if @setting.access_token.present? %>
+                  <a href="https://developers.facebook.com/tools/debug/accesstoken/?access_token=<%= @setting.access_token %>" target="_blank" class="rounded-lg bg-amber-50 px-2.5 py-2.5 text-[11px] font-medium text-amber-600 hover:bg-amber-100 transition whitespace-nowrap">Debug</a>
+                <% end %>
+              </div>
+              <p class="mt-1 text-[11px] text-gray-400">Permanent token from Business Settings &gt; System Users</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Business Account ID</label>
+              <div class="flex gap-2">
+                <%= f.text_field :business_account_id, class: "flex-1 min-w-0 #{input_class}", placeholder: "e.g. 1234567890" %>
+                <a href="https://business.facebook.com/settings/whatsapp-business-accounts/" target="_blank" class="<%= meta_link_class %>">WA Accounts</a>
+              </div>
+              <p class="mt-1 text-[11px] text-gray-400">Optional</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">App ID</label>
+              <div class="flex gap-2">
+                <%= f.text_field :app_id, class: "flex-1 min-w-0 #{input_class}", placeholder: "e.g. 1234567890" %>
+                <a href="https://developers.facebook.com/apps/" target="_blank" class="<%= meta_link_class %>">My Apps</a>
+              </div>
+              <p class="mt-1 text-[11px] text-gray-400">Found in App Settings &gt; Basic</p>
+            </div>
+
+            <div class="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
+              <%= f.check_box :active, class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+              <div>
+                <label class="text-xs font-medium text-gray-700">Active</label>
+                <p class="text-[11px] text-gray-400">Enable WhatsApp messaging</p>
+              </div>
+            </div>
+
+            <% if @setting.errors.any? %>
+              <div class="rounded-lg bg-red-50 border border-red-200 p-3">
+                <% @setting.errors.full_messages.each do |message| %>
+                  <p class="text-xs text-red-700"><%= message %></p>
+                <% end %>
+              </div>
+            <% end %>
+
+            <div class="pt-1">
+              <%= f.submit "Save Settings", class: "w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Test Connection -->
+      <div class="rounded-xl border border-gray-200 bg-white p-5">
+        <div class="flex items-center gap-2.5 mb-4">
+          <div class="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+            <svg class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900">Test Connection</h3>
+            <p class="text-[11px] text-gray-400">Verify API credentials are working</p>
+          </div>
+        </div>
+        <%= form_tag test_connection_whatsapp_setting_path, method: :post do %>
+          <%= submit_tag "Test Connection", class: "w-full rounded-lg bg-green-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-green-500 transition cursor-pointer" %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="space-y-6">
+
+      <!-- Webhook Configuration -->
+      <div class="rounded-xl border border-gray-200 bg-white p-5">
+        <div class="flex items-center gap-2.5 mb-4">
+          <div class="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <svg class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900">Webhook</h3>
+            <p class="text-[11px] text-gray-400">Meta App Dashboard &gt; WhatsApp &gt; Configuration</p>
+          </div>
+        </div>
+
+        <%= form_with(model: @setting, url: whatsapp_setting_path, method: :patch) do |f| %>
+          <div class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Callback URL</label>
+              <div class="flex gap-2">
+                <% callback_url = (@setting.webhook_url.presence || request.base_url) + "/webhooks/whatsapp" %>
+                <input type="text" value="<%= callback_url %>" readonly class="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-xs text-gray-700 focus:outline-none min-w-0">
+                <button type="button" onclick="navigator.clipboard.writeText('<%= callback_url %>').then(() => { this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000) })" class="rounded-lg bg-gray-100 px-3 py-2.5 text-[11px] font-medium text-gray-700 hover:bg-gray-200 transition flex-shrink-0">Copy</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Webhook Base URL</label>
+              <div class="flex gap-2">
+                <%= f.text_field :webhook_url, class: "flex-1 min-w-0 #{input_class}", placeholder: "e.g. https://yourapp.onrender.com" %>
+                <% if @setting.app_id.present? %>
+                  <a href="https://developers.facebook.com/apps/<%= @setting.app_id %>/whatsapp-business/wa-settings/" target="_blank" class="<%= meta_link_class %>">WA Config</a>
+                <% end %>
+              </div>
+              <p class="mt-1 text-[11px] text-gray-400">Your public domain. Callback URL updates on save.</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">App Secret</label>
+              <div class="flex gap-2">
+                <%= f.text_field :app_secret, class: "flex-1 min-w-0 #{input_class}", placeholder: "Your Meta App Secret" %>
+                <a href="https://developers.facebook.com/apps/<%= @setting.app_id.presence || '' %>/settings/basic/" target="_blank" class="<%= meta_link_class %>">App Basic</a>
+              </div>
+              <p class="mt-1 text-[11px] text-gray-400">Used to verify webhook payloads</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Verify Token</label>
+              <div class="flex gap-2">
+                <%= f.text_field :verify_token, class: "flex-1 #{input_class} min-w-0", id: "webhook-verify-token" %>
+                <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('webhook-verify-token').value).then(() => { this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000) })" class="rounded-lg bg-gray-100 px-3 py-2.5 text-[11px] font-medium text-gray-700 hover:bg-gray-200 transition flex-shrink-0">Copy</button>
+              </div>
+              <p class="mt-1 text-[11px] text-gray-400">Auto-generated. You can change it if needed.</p>
+            </div>
+
+            <div class="pt-1">
+              <%= f.submit "Save Webhook Settings", class: "w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Quality Score -->
+      <% if @setting.active? && @setting.phone_number_id.present? %>
+        <div class="rounded-xl border border-gray-200 bg-white p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2.5">
+              <div class="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+                <svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-sm font-semibold text-gray-900">Quality Score</h3>
+                <p class="text-[11px] text-gray-400">Synced every 6 hours</p>
+              </div>
+            </div>
+            <%= form_tag sync_quality_whatsapp_setting_path, method: :post, class: "inline" do %>
+              <%= submit_tag "Sync Now", class: "rounded-lg border border-gray-300 bg-white px-4 py-2 text-[11px] font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer" %>
+            <% end %>
+          </div>
+
+          <% if @setting.quality_rating.present? %>
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500">Rating</p>
+                <% quality_colors = { "GREEN" => "text-green-700 bg-green-100", "YELLOW" => "text-yellow-700 bg-yellow-100", "RED" => "text-red-700 bg-red-100" } %>
+                <% color_class = quality_colors[@setting.quality_rating.upcase] || "text-gray-700 bg-gray-100" %>
+                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold <%= color_class %>">
+                  <%= @setting.quality_rating.titleize %>
+                </span>
+              </div>
+              <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500">Messaging Limit</p>
+                <p class="text-xs font-semibold text-gray-900"><%= @setting.messaging_limit.presence || "—" %></p>
+              </div>
+              <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500">Last Synced</p>
+                <p class="text-xs font-medium text-gray-600"><%= @setting.quality_updated_at ? time_ago_in_words(@setting.quality_updated_at) + " ago" : "Never" %></p>
+              </div>
+            </div>
+          <% else %>
+            <div class="rounded-lg bg-gray-50 p-5 text-center">
+              <svg class="h-6 w-6 text-gray-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+              </svg>
+              <p class="text-xs text-gray-500">No quality data yet</p>
+              <p class="text-[11px] text-gray-400 mt-0.5">Click "Sync Now" to fetch your score</p>
+            </div>
           <% end %>
         </div>
 
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-1">Access Token</label>
-          <div class="flex gap-2">
-            <%= f.text_field :access_token, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Your permanent access token" %>
-            <a href="https://business.facebook.com/settings/system-users/" target="_blank" class="<%= meta_link_class %>">System Users</a>
-            <% if @setting.access_token.present? %>
-              <a href="https://developers.facebook.com/tools/debug/accesstoken/?access_token=<%= @setting.access_token %>" target="_blank" class="rounded-lg bg-amber-50 px-2.5 py-2.5 text-[11px] font-medium text-amber-600 hover:bg-amber-100 transition whitespace-nowrap">Debug</a>
-            <% end %>
-          </div>
-          <p class="mt-1 text-[11px] text-gray-400">Use a permanent token from Business Settings > System Users</p>
-        </div>
+      <% end %>
 
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-1">Business Account ID (Optional)</label>
-          <div class="flex gap-2">
-            <%= f.text_field :business_account_id, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
-            <a href="https://business.facebook.com/settings/whatsapp-business-accounts/" target="_blank" class="<%= meta_link_class %>">WA Accounts</a>
-          </div>
-        </div>
+    </div>
+  </div>
 
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-1">App ID (Optional)</label>
-          <div class="flex gap-2">
-            <%= f.text_field :app_id, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 1234567890" %>
-            <a href="https://developers.facebook.com/apps/" target="_blank" class="<%= meta_link_class %>">My Apps</a>
-          </div>
-          <p class="mt-1 text-[11px] text-gray-400">Found in App Settings > Basic</p>
-        </div>
+  <!-- Phone Number Details & Business Profile — full-width row -->
+  <% if @setting.active? && @setting.phone_number_id.present? %>
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <div class="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
-          <%= f.check_box :active, class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+      <!-- Phone Number Details -->
+      <div class="rounded-xl border border-gray-200 bg-white p-5">
+        <div class="flex items-center gap-2.5 mb-4">
+          <div class="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <svg class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+            </svg>
+          </div>
           <div>
-            <label class="text-xs font-medium text-gray-700">Active</label>
-            <p class="text-[11px] text-gray-400">Enable WhatsApp messaging</p>
+            <h3 class="text-sm font-semibold text-gray-900">Phone Number Details</h3>
+            <p class="text-[11px] text-gray-400">From Meta Graph API</p>
           </div>
         </div>
 
-        <% if @setting.errors.any? %>
-          <div class="rounded-lg bg-red-50 border border-red-200 p-3">
-            <% @setting.errors.full_messages.each do |message| %>
-              <p class="text-xs text-red-700"><%= message %></p>
+        <% if @setting.phone_display_number.present? %>
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+              <p class="text-[11px] font-medium text-gray-500">Display Number</p>
+              <p class="text-xs font-semibold text-gray-900"><%= @setting.phone_display_number %></p>
+            </div>
+            <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+              <p class="text-[11px] font-medium text-gray-500">Verified Name</p>
+              <p class="text-xs font-semibold text-gray-900"><%= @setting.verified_name.presence || "—" %></p>
+            </div>
+            <% if @setting.name_status.present? %>
+              <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500">Name Status</p>
+                <% name_status_colors = { "APPROVED" => "text-green-700 bg-green-100", "DECLINED" => "text-red-700 bg-red-100", "PENDING_REVIEW" => "text-yellow-700 bg-yellow-100", "EXPIRED" => "text-red-700 bg-red-100" } %>
+                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold <%= name_status_colors[@setting.name_status.upcase] || 'text-gray-700 bg-gray-100' %>">
+                  <%= @setting.name_status.titleize %>
+                </span>
+              </div>
             <% end %>
+            <% if @setting.phone_status.present? %>
+              <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500">Phone Status</p>
+                <% phone_status_colors = { "CONNECTED" => "text-green-700 bg-green-100", "OFFLINE" => "text-red-700 bg-red-100", "FLAGGED" => "text-yellow-700 bg-yellow-100", "RATE_LIMITED" => "text-yellow-700 bg-yellow-100", "BANNED" => "text-red-700 bg-red-100" } %>
+                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold <%= phone_status_colors[@setting.phone_status.upcase] || 'text-gray-700 bg-gray-100' %>">
+                  <%= @setting.phone_status.titleize %>
+                </span>
+              </div>
+            <% end %>
+            <% if @setting.code_verification_status.present? %>
+              <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500">Code Verification</p>
+                <p class="text-xs font-semibold text-gray-900"><%= @setting.code_verification_status.titleize %></p>
+              </div>
+            <% end %>
+            <% if @setting.platform_type.present? %>
+              <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500">Platform</p>
+                <p class="text-xs font-semibold text-gray-900"><%= @setting.platform_type.titleize %></p>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="rounded-lg bg-gray-50 p-5 text-center">
+            <svg class="h-6 w-6 text-gray-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+            </svg>
+            <p class="text-xs text-gray-500">No phone details yet</p>
+            <p class="text-[11px] text-gray-400 mt-0.5">Click "Sync Now" above to fetch details</p>
           </div>
         <% end %>
-
-        <div class="flex items-center gap-3 pt-2">
-          <%= f.submit "Save Settings", class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
-        </div>
       </div>
-    <% end %>
-  </div>
 
-  <!-- Test Connection -->
-  <div class="mt-6 rounded-xl border border-gray-200 bg-white p-6">
-    <h3 class="text-sm font-semibold text-gray-900 mb-2">Test Connection</h3>
-    <p class="text-xs text-gray-500 mb-4">Verify that your API credentials are working correctly.</p>
-    <%= form_tag test_connection_whatsapp_setting_path, method: :post do %>
-      <%= submit_tag "Test Connection", class: "rounded-lg bg-green-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-green-500 transition cursor-pointer" %>
-    <% end %>
-  </div>
-
-  <!-- Webhook Configuration -->
-  <div class="mt-6 rounded-xl border border-gray-200 bg-white p-6">
-    <h3 class="text-sm font-semibold text-gray-900 mb-2">Webhook Configuration</h3>
-    <p class="text-xs text-gray-500 mb-4">Copy these values into your Meta App Dashboard under WhatsApp &gt; Configuration &gt; Webhook.</p>
-
-    <%= form_with(model: @setting, url: whatsapp_setting_path, method: :patch) do |f| %>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-1">Callback URL</label>
-          <div class="flex gap-2">
-            <% callback_url = (@setting.webhook_url.presence || request.base_url) + "/webhooks/whatsapp" %>
-            <input type="text" value="<%= callback_url %>" readonly class="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-xs text-gray-900 focus:outline-none" id="webhook-callback-url">
-            <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('webhook-callback-url').value).then(() => this.textContent = 'Copied!')" class="rounded-lg bg-gray-100 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-200 transition">Copy</button>
+      <!-- Business Profile -->
+      <div class="rounded-xl border border-gray-200 bg-white p-5">
+        <div class="flex items-center gap-2.5 mb-4">
+          <div class="h-8 w-8 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
+            <svg class="h-4 w-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900">Business Profile</h3>
+            <p class="text-[11px] text-gray-400">WhatsApp Business profile info</p>
           </div>
         </div>
 
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-1">Webhook Base URL</label>
-          <div class="flex gap-2">
-            <%= f.text_field :webhook_url, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. https://yourapp.onrender.com" %>
-            <% if @setting.app_id.present? %>
-              <a href="https://developers.facebook.com/apps/<%= @setting.app_id %>/whatsapp-business/wa-settings/" target="_blank" class="<%= meta_link_class %>">WA Config</a>
+        <% if @setting.profile_synced_at.present? %>
+          <div class="space-y-2.5">
+            <% if @setting.profile_picture_url.present? %>
+              <div class="flex justify-center mb-3">
+                <img src="<%= @setting.profile_picture_url %>" alt="Business profile" class="h-16 w-16 rounded-full object-cover border-2 border-violet-100">
+              </div>
             <% end %>
-          </div>
-          <p class="mt-1 text-[11px] text-gray-400">Your public-facing domain. The Callback URL above updates on save.</p>
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-1">App Secret</label>
-          <div class="flex gap-2">
-            <%= f.text_field :app_secret, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Your Meta App Secret" %>
-            <% if @setting.app_id.present? %>
-              <a href="https://developers.facebook.com/apps/<%= @setting.app_id %>/settings/basic/" target="_blank" class="<%= meta_link_class %>">App Basic</a>
-            <% else %>
-              <a href="https://developers.facebook.com/apps/" target="_blank" class="<%= meta_link_class %>">App Basic</a>
+            <% if @setting.business_about.present? %>
+              <div class="rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500 mb-1">About</p>
+                <p class="text-xs text-gray-900"><%= @setting.business_about %></p>
+              </div>
             <% end %>
+            <% if @setting.business_description.present? %>
+              <div class="rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500 mb-1">Description</p>
+                <p class="text-xs text-gray-900"><%= @setting.business_description %></p>
+              </div>
+            <% end %>
+            <% if @setting.business_address.present? %>
+              <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500">Address</p>
+                <p class="text-xs font-semibold text-gray-900"><%= @setting.business_address %></p>
+              </div>
+            <% end %>
+            <% if @setting.business_email.present? %>
+              <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500">Email</p>
+                <p class="text-xs font-semibold text-gray-900"><%= @setting.business_email %></p>
+              </div>
+            <% end %>
+            <% if @setting.parsed_websites.any? %>
+              <div class="rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500 mb-1">Websites</p>
+                <div class="space-y-1">
+                  <% @setting.parsed_websites.each do |url| %>
+                    <a href="<%= url %>" target="_blank" class="block text-xs text-indigo-600 hover:text-indigo-500 truncate"><%= url %></a>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+            <% if @setting.business_vertical.present? %>
+              <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+                <p class="text-[11px] font-medium text-gray-500">Industry</p>
+                <span class="inline-flex items-center rounded-full bg-violet-100 px-2.5 py-0.5 text-[11px] font-semibold text-violet-700">
+                  <%= @setting.business_vertical.titleize %>
+                </span>
+              </div>
+            <% end %>
+            <div class="flex items-center justify-between rounded-lg bg-gray-50 px-3.5 py-2.5">
+              <p class="text-[11px] font-medium text-gray-500">Last Synced</p>
+              <p class="text-xs font-medium text-gray-600"><%= time_ago_in_words(@setting.profile_synced_at) %> ago</p>
+            </div>
           </div>
-          <p class="mt-1 text-[11px] text-gray-400">Used to verify webhook payloads.</p>
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-1">Verify Token</label>
-          <div class="flex gap-2">
-            <%= f.text_field :verify_token, class: "flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", id: "webhook-verify-token" %>
-            <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('webhook-verify-token').value).then(() => this.textContent = 'Copied!')" class="rounded-lg bg-gray-100 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-200 transition">Copy</button>
+        <% else %>
+          <div class="rounded-lg bg-gray-50 p-5 text-center">
+            <svg class="h-6 w-6 text-gray-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+            </svg>
+            <p class="text-xs text-gray-500">No business profile yet</p>
+            <p class="text-[11px] text-gray-400 mt-0.5">Click "Sync Now" above to fetch profile</p>
           </div>
-          <p class="mt-1 text-[11px] text-gray-400">Auto-generated. You can change it if needed.</p>
-        </div>
-
-        <div class="flex items-center gap-3 pt-2">
-          <%= f.submit "Save Webhook Settings", class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
-        </div>
+        <% end %>
       </div>
-    <% end %>
-  </div>
+
+    </div>
+  <% end %>
 </div>

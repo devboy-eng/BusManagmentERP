@@ -10,16 +10,16 @@ class FollowUpsController < ApplicationController
   end
 
   def new
-    @leads = Lead.order(:name)
-    @customers = Customer.active.order(:name)
+    @leads = Lead.whatsapp_opted_in.order(:name)
+    @customers = Customer.active.whatsapp_opted_in.order(:name)
     @templates = WhatsappTemplate.approved.ordered
   end
 
   def create
     template = WhatsappTemplate.find_by(id: params[:template_id])
     unless template
-      @leads = Lead.order(:name)
-      @customers = Customer.active.order(:name)
+      @leads = Lead.whatsapp_opted_in.order(:name)
+      @customers = Customer.active.whatsapp_opted_in.order(:name)
       @templates = WhatsappTemplate.approved.ordered
       flash.now[:alert] = "Please select an approved template."
       render :new, status: :unprocessable_entity
@@ -37,14 +37,14 @@ class FollowUpsController < ApplicationController
     # Collect contacts from selected leads
     contacts_data = []
     if params[:lead_ids].present?
-      Lead.where(id: params[:lead_ids]).each do |lead|
+      Lead.where(id: params[:lead_ids], whatsapp_opt_out: false).each do |lead|
         contacts_data << { lead: lead, name: lead.name, phone: lead.phone }
       end
     end
 
     # Collect contacts from selected customers
     if params[:customer_ids].present?
-      Customer.where(id: params[:customer_ids]).each do |customer|
+      Customer.where(id: params[:customer_ids], whatsapp_opt_out: false).each do |customer|
         contacts_data << { customer: customer, name: customer.name, phone: customer.phone }
       end
     end
@@ -57,9 +57,16 @@ class FollowUpsController < ApplicationController
       end
     end
 
+    # Deduplicate by normalized phone (preserves lead > customer > CSV priority)
+    seen_phones = Set.new
+    contacts_data = contacts_data.select do |cd|
+      normalized = WhatsappService.normalize_phone(cd[:phone])
+      seen_phones.add?(normalized) ? true : false
+    end
+
     if contacts_data.empty?
-      @leads = Lead.order(:name)
-      @customers = Customer.active.order(:name)
+      @leads = Lead.whatsapp_opted_in.order(:name)
+      @customers = Customer.active.whatsapp_opted_in.order(:name)
       @templates = WhatsappTemplate.approved.ordered
       flash.now[:alert] = "Please select at least one recipient."
       render :new, status: :unprocessable_entity
@@ -79,8 +86,8 @@ class FollowUpsController < ApplicationController
 
       redirect_to follow_ups_path, notice: "Campaign scheduled with #{contacts_data.size} recipients."
     else
-      @leads = Lead.order(:name)
-      @customers = Customer.active.order(:name)
+      @leads = Lead.whatsapp_opted_in.order(:name)
+      @customers = Customer.active.whatsapp_opted_in.order(:name)
       @templates = WhatsappTemplate.approved.ordered
       flash.now[:alert] = campaign.errors.full_messages.join(", ")
       render :new, status: :unprocessable_entity

@@ -11,9 +11,9 @@ class WhatsappMarketingController < ApplicationController
 
   def compose
     @recipients = if params[:type] == "customers"
-      Customer.active
+      Customer.active.whatsapp_opted_in
     else
-      Lead.all
+      Lead.whatsapp_opted_in
     end
     @type = params[:type] || "leads"
     @templates = WhatsappTemplate.ordered
@@ -38,9 +38,12 @@ class WhatsappMarketingController < ApplicationController
     count = 0
 
     @recipient_ids.each do |id|
+      recipient = model.find_by(id: id)
+      next if recipient.nil? || recipient.whatsapp_opt_out?
+
       SendWhatsappMessageJob.perform_later(
         recipient_type: model.name,
-        recipient_id: id.to_i,
+        recipient_id: recipient.id,
         message: @message,
         user_id: current_user.id
       )
@@ -64,7 +67,7 @@ class WhatsappMarketingController < ApplicationController
       return
     end
 
-    recipients = @type == "customers" ? Customer.active : Lead.all
+    recipients = @type == "customers" ? Customer.active.whatsapp_opted_in : Lead.whatsapp_opted_in
     model_name = @type == "customers" ? "Customer" : "Lead"
     count = 0
 
@@ -110,6 +113,8 @@ class WhatsappMarketingController < ApplicationController
 
     recipient_ids.each do |id|
       recipient = model.find(id)
+      next if recipient.whatsapp_opt_out?
+
       result = service.send_template_and_log(
         recipient: recipient,
         template: template,

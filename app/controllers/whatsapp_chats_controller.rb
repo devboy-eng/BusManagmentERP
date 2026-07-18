@@ -44,6 +44,12 @@ class WhatsappChatsController < ApplicationController
       return render_form_error("Message too long. WhatsApp allows maximum 4096 characters.")
     end
 
+    unless @conversation.within_reply_window?
+      return render_form_error(
+        "The 24-hour reply window has expired. Please use an approved template to re-initiate contact."
+      )
+    end
+
     begin
       service = WhatsappService.new
 

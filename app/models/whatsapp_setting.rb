@@ -13,6 +13,12 @@ class WhatsappSetting < ApplicationRecord
     setting.present? && setting.active? && setting.phone_number_id.present? && setting.access_token.present?
   end
 
+  def parsed_websites
+    JSON.parse(business_websites || "[]")
+  rescue JSON::ParserError
+    []
+  end
+
   private
 
   def generate_verify_token

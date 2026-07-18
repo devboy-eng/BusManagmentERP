@@ -8,6 +8,8 @@ class Lead < ApplicationRecord
 
   enum :status, { pending: 0, not_interested: 1, work_in_process: 2, contacted: 3, follow_up: 4 }, default: :pending
 
+  scope :whatsapp_opted_in, -> { where(whatsapp_opt_out: false) }
+
   validates :name, presence: true
   validates :phone, presence: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true

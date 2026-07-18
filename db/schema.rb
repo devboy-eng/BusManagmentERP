@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_17_100000) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_18_100002) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -91,6 +91,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_17_100000) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "whatsapp_opt_out", default: false, null: false
   end
 
   create_table "follow_up_campaign_contacts", force: :cascade do |t|
@@ -159,6 +160,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_17_100000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "category"
+    t.boolean "whatsapp_opt_out", default: false, null: false
   end
 
   create_table "quick_responses", force: :cascade do |t|
@@ -407,6 +409,23 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_17_100000) do
     t.string "webhook_url"
     t.string "app_secret"
     t.string "app_id"
+    t.string "quality_rating"
+    t.string "messaging_limit"
+    t.datetime "quality_updated_at"
+    t.string "phone_display_number"
+    t.string "verified_name"
+    t.string "name_status"
+    t.string "phone_status"
+    t.string "code_verification_status"
+    t.string "platform_type"
+    t.string "business_about"
+    t.text "business_description"
+    t.string "business_address"
+    t.string "business_email"
+    t.text "business_websites"
+    t.string "business_vertical"
+    t.text "profile_picture_url"
+    t.datetime "profile_synced_at"
   end
 
   create_table "whatsapp_templates", force: :cascade do |t|

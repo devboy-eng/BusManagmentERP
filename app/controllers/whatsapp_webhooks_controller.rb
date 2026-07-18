@@ -216,6 +216,11 @@ class WhatsappWebhooksController < ActionController::Base
     # Send read receipt so sender sees blue ticks
     send_read_receipt(whatsapp_id)
 
+    # Check for opt-out/opt-in keywords before any auto-reply processing
+    if msg_type == "text" && message_attrs[:body].present?
+      return if check_opt_out_or_in(message_attrs[:body], conversation, sender_phone)
+    end
+
     # Check if this is a menu item selection (list_reply)
     if message_attrs[:_list_reply_id].present?
       check_menu_reply(message_attrs[:_list_reply_id], conversation, sender_phone)
@@ -306,6 +311,57 @@ class WhatsappWebhooksController < ActionController::Base
   rescue => e
     Rails.logger.error "[WhatsApp Webhook] Failed to resolve media URL for #{media_id}: #{e.message}"
     nil
+  end
+
+  OPT_OUT_KEYWORDS = %w[STOP UNSUBSCRIBE].freeze
+  OPT_IN_KEYWORDS = %w[START SUBSCRIBE].freeze
+
+  def check_opt_out_or_in(text, conversation, sender_phone)
+    normalized_text = text.strip.upcase
+
+    # Also handle "OPT OUT" and "OPT IN" as multi-word keywords
+    is_opt_out = OPT_OUT_KEYWORDS.include?(normalized_text) || normalized_text == "OPT OUT"
+    is_opt_in = OPT_IN_KEYWORDS.include?(normalized_text) || normalized_text == "OPT IN"
+
+    return false unless is_opt_out || is_opt_in
+
+    contact = conversation.contact
+    return false unless contact.is_a?(Lead) || contact.is_a?(Customer)
+
+    if is_opt_out
+      contact.update!(whatsapp_opt_out: true)
+      reply_text = "You have been unsubscribed from WhatsApp messages. Reply START to re-subscribe."
+      Rails.logger.info "[WhatsApp Webhook] Contact #{contact.class}##{contact.id} opted out (phone: #{sender_phone})"
+    else
+      contact.update!(whatsapp_opt_out: false)
+      reply_text = "You have been re-subscribed to WhatsApp messages. Reply STOP to unsubscribe."
+      Rails.logger.info "[WhatsApp Webhook] Contact #{contact.class}##{contact.id} opted in (phone: #{sender_phone})"
+    end
+
+    # Send confirmation reply
+    service = WhatsappService.new
+    result = service.send_text_message(phone: sender_phone, text: reply_text)
+
+    if result[:success]
+      reply_message = WhatsappMessage.create!(
+        recipient_phone: sender_phone,
+        message_body: reply_text,
+        direction: "outgoing",
+        whatsapp_conversation: conversation,
+        whatsapp_message_id: result[:message_id],
+        status: :sent,
+        message_type: "text"
+      )
+
+      conversation.update_last_message!(reply_message)
+      broadcast_new_message(conversation, reply_message)
+      broadcast_conversation_update(conversation)
+    end
+
+    true
+  rescue => e
+    Rails.logger.error "[WhatsApp Webhook] Opt-out/in error: #{e.class}: #{e.message}"
+    false
   end
 
   def check_menu_trigger(text, conversation, sender_phone)

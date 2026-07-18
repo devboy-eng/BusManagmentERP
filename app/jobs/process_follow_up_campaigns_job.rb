@@ -17,6 +17,7 @@ class ProcessFollowUpCampaignsJob < ApplicationJob
 
     campaign.contacts.queued.find_each do |contact|
       send_to_contact(service, template, variables, contact, campaign.user)
+      sleep 0.2
     end
 
     campaign.update!(status: :completed)
@@ -71,6 +72,8 @@ class ProcessFollowUpCampaignsJob < ApplicationJob
         )
       end
     end
+  rescue WhatsappService::NonRetryableError => e
+    contact.update!(status: :failed, error_message: "Permanent: #{e.message}")
   rescue => e
     contact.update!(status: :failed, error_message: e.message)
   end

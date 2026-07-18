@@ -88,6 +88,7 @@ Rails.application.routes.draw do
 
   resource :whatsapp_setting, only: [:edit, :update] do
     post :test_connection
+    post :sync_quality
   end
 
   resources :uploads, only: [:create]

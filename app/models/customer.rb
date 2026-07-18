@@ -8,6 +8,8 @@ class Customer < ApplicationRecord
 
   enum :status, { active: 0, non_active: 1 }, default: :active
 
+  scope :whatsapp_opted_in, -> { where(whatsapp_opt_out: false) }
+
   validates :name, presence: true
   validates :phone, presence: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
