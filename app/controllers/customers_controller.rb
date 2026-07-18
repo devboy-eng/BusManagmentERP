@@ -3,9 +3,19 @@ class CustomersController < ApplicationController
 
   def index
     @customers = Customer.all
-    @customers = @customers.where("name LIKE ? OR phone LIKE ? OR email LIKE ? OR pan LIKE ? OR gst LIKE ? OR trademark LIKE ?",
-      "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%",
-      "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%") if params[:search].present?
+
+    if params[:search].present?
+      search = params[:search].strip
+      if search.downcase == "active"
+        @customers = @customers.active
+      elsif search.downcase == "inactive"
+        @customers = @customers.where(active: false)
+      else
+        @customers = @customers.where("name LIKE ? OR phone LIKE ? OR email LIKE ? OR pan LIKE ? OR gst LIKE ? OR trademark LIKE ?",
+          "%#{search}%", "%#{search}%", "%#{search}%",
+          "%#{search}%", "%#{search}%", "%#{search}%")
+      end
+    end
 
     if params[:sort].present?
       direction = params[:direction] == "desc" ? "desc" : "asc"

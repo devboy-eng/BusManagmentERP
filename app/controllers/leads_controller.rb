@@ -3,9 +3,18 @@ class LeadsController < ApplicationController
 
   def index
     @leads = Lead.all
-    @leads = @leads.where("name LIKE ? OR phone LIKE ? OR email LIKE ? OR pan LIKE ? OR gst LIKE ? OR trademark LIKE ? OR category LIKE ?",
-      "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%",
-      "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%") if params[:search].present?
+
+    if params[:search].present?
+      search = params[:search].strip
+      status_match = Lead.statuses.keys.find { |s| s.gsub("_", " ") == search.downcase || s == search.downcase }
+      if status_match
+        @leads = @leads.where(status: status_match)
+      else
+        @leads = @leads.where("name LIKE ? OR phone LIKE ? OR email LIKE ? OR pan LIKE ? OR gst LIKE ? OR trademark LIKE ? OR category LIKE ?",
+          "%#{search}%", "%#{search}%", "%#{search}%",
+          "%#{search}%", "%#{search}%", "%#{search}%", "%#{search}%")
+      end
+    end
 
     if params[:sort].present?
       direction = params[:direction] == "desc" ? "desc" : "asc"
