@@ -3,7 +3,8 @@ class WhatsappSettingsController < ApplicationController
 
   def edit
     @setting = WhatsappSetting.instance
-    load_phone_numbers if current_user.super_admin?
+    @is_super_admin = current_user.super_admin?
+    load_phone_numbers if @is_super_admin
   end
 
   def update
