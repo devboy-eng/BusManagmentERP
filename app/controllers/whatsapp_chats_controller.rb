@@ -194,7 +194,7 @@ class WhatsappChatsController < ApplicationController
     respond_to do |format|
       format.turbo_stream do
         @messages = @conversation.whatsapp_messages.chronological
-        @conversations = WhatsappConversation.ordered
+        @conversations = WhatsappConversation.includes(:assigned_user).ordered
         render turbo_stream: [
           turbo_stream.update("chat-area",
             partial: "whatsapp_chats/chat_area",
@@ -216,7 +216,7 @@ class WhatsappChatsController < ApplicationController
     respond_to do |format|
       format.turbo_stream do
         @messages = @conversation.whatsapp_messages.chronological
-        @conversations = WhatsappConversation.ordered
+        @conversations = WhatsappConversation.includes(:assigned_user).ordered
         render turbo_stream: [
           turbo_stream.update("chat-area",
             partial: "whatsapp_chats/chat_area",
@@ -319,7 +319,7 @@ class WhatsappChatsController < ApplicationController
   private
 
   def load_conversations
-    @conversations = WhatsappConversation.ordered
+    @conversations = WhatsappConversation.includes(:assigned_user).ordered
   end
 
   def load_conversation

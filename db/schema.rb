@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_18_100002) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_18_100004) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -49,6 +49,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_100002) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_auto_reply_rules_on_active"
+    t.index ["user_id"], name: "index_auto_reply_rules_on_user_id"
   end
 
   create_table "comments", force: :cascade do |t|
@@ -58,6 +59,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_100002) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable_type_and_commentable_id"
+    t.index ["user_id"], name: "index_comments_on_user_id"
   end
 
   create_table "csat_responses", force: :cascade do |t|
@@ -92,6 +95,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_100002) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "whatsapp_opt_out", default: false, null: false
+    t.index ["user_id"], name: "index_customers_on_user_id"
   end
 
   create_table "follow_up_campaign_contacts", force: :cascade do |t|
@@ -129,6 +133,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_100002) do
     t.integer "expired_count", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_follow_up_campaigns_on_user_id"
+    t.index ["whatsapp_template_id"], name: "index_follow_up_campaigns_on_whatsapp_template_id"
   end
 
   create_table "follow_ups", force: :cascade do |t|
@@ -161,6 +167,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_100002) do
     t.datetime "updated_at", null: false
     t.string "category"
     t.boolean "whatsapp_opt_out", default: false, null: false
+    t.index ["user_id"], name: "index_leads_on_user_id"
   end
 
   create_table "quick_responses", force: :cascade do |t|
@@ -193,6 +200,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_100002) do
     t.datetime "updated_at", null: false
     t.index ["scheduled_at"], name: "index_scheduled_messages_on_scheduled_at"
     t.index ["status", "scheduled_at"], name: "index_scheduled_messages_on_status_and_scheduled_at"
+    t.index ["user_id"], name: "index_scheduled_messages_on_user_id"
     t.index ["whatsapp_conversation_id"], name: "index_scheduled_messages_on_whatsapp_conversation_id"
   end
 
@@ -335,6 +343,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_100002) do
     t.boolean "otp_enabled", default: false, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["role_id"], name: "index_users_on_role_id"
   end
 
   create_table "whatsapp_conversations", force: :cascade do |t|
@@ -391,6 +400,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_100002) do
     t.string "media_caption"
     t.string "reaction_emoji"
     t.string "context_message_id"
+    t.text "metadata"
     t.index ["message_type"], name: "index_whatsapp_messages_on_message_type"
     t.index ["recipient_type", "recipient_id"], name: "index_whatsapp_messages_on_recipient_type_and_recipient_id"
     t.index ["user_id"], name: "index_whatsapp_messages_on_user_id"

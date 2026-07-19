@@ -50,6 +50,12 @@ class WhatsappMessage < ApplicationRecord
     message_type == "button_reply"
   end
 
+  def template_buttons
+    return [] if metadata.blank?
+    parsed = metadata.is_a?(String) ? (JSON.parse(metadata) rescue {}) : metadata
+    parsed["buttons"] || []
+  end
+
   private
 
   def media_or_reaction?

@@ -328,11 +328,19 @@ class WhatsappService
     display_body = template.body.dup
     variables.each_with_index { |val, i| display_body.gsub!("{{#{i + 1}}}", val.to_s) }
 
+    # Store template buttons for chat display
+    msg_metadata = nil
+    if template.parsed_buttons.any?
+      msg_metadata = { buttons: template.parsed_buttons }.to_json
+    end
+
     msg_record = WhatsappMessage.create!(
       recipient: recipient,
       recipient_name: recipient.name,
       recipient_phone: recipient.phone,
       message_body: display_body,
+      message_type: "template",
+      metadata: msg_metadata,
       user: user,
       status: :queued,
       direction: "outgoing",
