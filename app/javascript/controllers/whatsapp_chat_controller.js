@@ -8,7 +8,8 @@ export default class extends Controller {
     "quickResponseDropdown",
     "scheduleModal", "scheduleBody", "scheduleAt",
     "searchBar", "messageSearch", "searchResults",
-    "globalSearchPanel", "globalSearchInput", "globalSearchResults"
+    "globalSearchPanel", "globalSearchInput", "globalSearchResults",
+    "filterBtn"
   ]
 
   connect() {
@@ -19,6 +20,7 @@ export default class extends Controller {
     this.selectedFile = null
     this.searchTimeout = null
     this.quickResponseTimeout = null
+    this.currentFilter = "all"
 
     const conversationId = this.messagesTarget?.dataset?.conversationId
     if (conversationId) {
@@ -130,8 +132,33 @@ export default class extends Controller {
 
     items.forEach(item => {
       const text = item.textContent.toLowerCase()
-      item.style.display = text.includes(query) ? "" : "none"
+      const matchesText = text.includes(query)
+      const matchesStatus = this.matchesStatusFilter(item)
+      item.style.display = (matchesText && matchesStatus) ? "" : "none"
     })
+  }
+
+  filterByStatus(event) {
+    const filter = event.currentTarget.dataset.filter
+    this.currentFilter = filter
+
+    this.filterBtnTargets.forEach(btn => {
+      if (btn.dataset.filter === filter) {
+        btn.className = "flex-1 rounded-md px-2 py-1.5 text-[11px] font-medium bg-gray-900 text-white"
+      } else {
+        btn.className = "flex-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-gray-100"
+      }
+    })
+
+    this.filterConversations()
+  }
+
+  matchesStatusFilter(item) {
+    if (this.currentFilter === "all") return true
+    const unreadCount = parseInt(item.dataset.unreadCount || "0", 10)
+    if (this.currentFilter === "unread") return unreadCount > 0
+    if (this.currentFilter === "read") return unreadCount === 0
+    return true
   }
 
   // --- File Attachment ---

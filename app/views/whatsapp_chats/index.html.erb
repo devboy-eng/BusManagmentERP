@@ -34,6 +34,22 @@
       </div>
     </div>
 
+    <!-- Read/Unread Filter -->
+    <div class="flex items-center gap-1 px-3 py-2 border-b border-gray-200">
+      <button class="flex-1 rounded-md px-2 py-1.5 text-[11px] font-medium bg-gray-900 text-white"
+              data-whatsapp-chat-target="filterBtn"
+              data-action="click->whatsapp-chat#filterByStatus"
+              data-filter="all">All</button>
+      <button class="flex-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-gray-100"
+              data-whatsapp-chat-target="filterBtn"
+              data-action="click->whatsapp-chat#filterByStatus"
+              data-filter="unread">Unread</button>
+      <button class="flex-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-gray-100"
+              data-whatsapp-chat-target="filterBtn"
+              data-action="click->whatsapp-chat#filterByStatus"
+              data-filter="read">Read</button>
+    </div>
+
     <!-- Conversations -->
     <div id="conversation-list" class="flex-1 overflow-y-auto" data-whatsapp-chat-target="conversationList">
       <%= render partial: "whatsapp_chats/conversation_list", locals: { conversations: @conversations, selected: @selected } %>
