@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# Debug: check if DATABASE_URL is set
+echo "DATABASE_URL set: $(if [ -n "$DATABASE_URL" ]; then echo 'yes'; else echo 'NO - MISSING'; fi)"
+
 # If running the rails server then create or migrate existing database
 if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
   ./bin/rails db:prepare
