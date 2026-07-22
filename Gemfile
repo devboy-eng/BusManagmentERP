@@ -59,9 +59,10 @@ gem "solid_queue"
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Pin stdlib-extracted gems to versions compatible with Rails 7.1 / Ruby 3.2
+# Pin gems to versions compatible with Rails 7.1 / Ruby 3.2
 gem "logger", "~> 1.5.0"
 gem "bigdecimal", "~> 3.1"
+gem "connection_pool", "~> 2.4"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
