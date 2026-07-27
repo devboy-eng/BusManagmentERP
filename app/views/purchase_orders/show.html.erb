@@ -1,0 +1,132 @@
+<% content_for :page_title, "Purchase Order #{@purchase_order.po_number}" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900"><%= @purchase_order.po_number %></h2>
+    <p class="text-xs text-gray-500 mt-1">Purchase order details</p>
+  </div>
+  <div class="flex items-center gap-3">
+    <% unless @purchase_order.received? || @purchase_order.cancelled? %>
+      <%= link_to edit_purchase_order_path(@purchase_order), class: "inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" do %>
+        Edit
+      <% end %>
+    <% end %>
+    <%= link_to purchase_orders_path, class: "inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" do %>
+      Back to List
+    <% end %>
+  </div>
+</div>
+
+<div class="space-y-6">
+  <div class="rounded-xl border border-gray-200 bg-white p-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-4">Order Information</h3>
+    <dl class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="rounded-lg bg-gray-50 p-3">
+        <dt class="text-[11px] text-gray-500">PO Number</dt>
+        <dd class="text-xs text-gray-900 mt-1"><%= @purchase_order.po_number %></dd>
+      </div>
+      <div class="rounded-lg bg-gray-50 p-3">
+        <dt class="text-[11px] text-gray-500">Supplier</dt>
+        <dd class="text-xs text-gray-900 mt-1"><%= @purchase_order.supplier&.name %></dd>
+      </div>
+      <div class="rounded-lg bg-gray-50 p-3">
+        <dt class="text-[11px] text-gray-500">Warehouse</dt>
+        <dd class="text-xs text-gray-900 mt-1"><%= @purchase_order.warehouse&.name %></dd>
+      </div>
+      <div class="rounded-lg bg-gray-50 p-3">
+        <dt class="text-[11px] text-gray-500">Status</dt>
+        <dd class="mt-1">
+          <% status_colors = { "draft" => "bg-gray-100 text-gray-800", "sent" => "bg-blue-100 text-blue-800", "partially_received" => "bg-yellow-100 text-yellow-800", "received" => "bg-green-100 text-green-800", "cancelled" => "bg-red-100 text-red-800" } %>
+          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium <%= status_colors[@purchase_order.status] || 'bg-gray-100 text-gray-800' %>">
+            <%= @purchase_order.status.humanize %>
+          </span>
+        </dd>
+      </div>
+      <div class="rounded-lg bg-gray-50 p-3">
+        <dt class="text-[11px] text-gray-500">Expected Delivery</dt>
+        <dd class="text-xs text-gray-900 mt-1"><%= @purchase_order.expected_delivery_date&.strftime("%d %b %Y") || "-" %></dd>
+      </div>
+      <div class="rounded-lg bg-gray-50 p-3">
+        <dt class="text-[11px] text-gray-500">Total Amount</dt>
+        <dd class="text-xs text-gray-900 mt-1 font-medium"><%= number_to_currency(@purchase_order.total_amount, unit: "\u20B9") %></dd>
+      </div>
+    </dl>
+    <% if @purchase_order.notes.present? %>
+      <div class="rounded-lg bg-gray-50 p-3 mt-4">
+        <dt class="text-[11px] text-gray-500">Notes</dt>
+        <dd class="text-xs text-gray-900 mt-1"><%= @purchase_order.notes %></dd>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Items Table -->
+  <div class="rounded-xl border border-gray-200 bg-white p-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-4">Order Items</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-200 bg-gray-50">
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Spare Part</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ordered Qty</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Received Qty</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unit Cost</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% @purchase_order.items.includes(:spare_part).each do |item| %>
+            <tr>
+              <td class="px-4 py-2 text-xs text-gray-900"><%= item.spare_part&.name %></td>
+              <td class="px-4 py-2 text-xs text-gray-600"><%= item.ordered_quantity %></td>
+              <td class="px-4 py-2 text-xs text-gray-600"><%= item.received_quantity || 0 %></td>
+              <td class="px-4 py-2 text-xs text-gray-600"><%= number_to_currency(item.unit_cost, unit: "\u20B9") %></td>
+              <td class="px-4 py-2 text-xs text-gray-900 font-medium"><%= number_to_currency(item.total_cost, unit: "\u20B9") %></td>
+            </tr>
+          <% end %>
+        </tbody>
+        <tfoot>
+          <tr class="border-t border-gray-300">
+            <td colspan="4" class="px-4 py-2 text-xs font-medium text-gray-900 text-right">Total:</td>
+            <td class="px-4 py-2 text-xs font-bold text-gray-900"><%= number_to_currency(@purchase_order.total_amount, unit: "\u20B9") %></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Receive Stock -->
+  <% unless @purchase_order.received? || @purchase_order.cancelled? %>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <h3 class="text-sm font-semibold text-gray-900 mb-4">Receive Stock</h3>
+      <%= form_tag receive_purchase_order_path(@purchase_order), method: :patch, class: "space-y-4" do %>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-gray-200 bg-gray-50">
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Part</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ordered</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Already Received</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Receive Now</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <% @purchase_order.items.includes(:spare_part).each do |item| %>
+                <tr>
+                  <td class="px-4 py-2 text-xs text-gray-900"><%= item.spare_part&.name %></td>
+                  <td class="px-4 py-2 text-xs text-gray-600"><%= item.ordered_quantity %></td>
+                  <td class="px-4 py-2 text-xs text-gray-600"><%= item.received_quantity || 0 %></td>
+                  <td class="px-4 py-2">
+                    <%= number_field_tag "received_quantities[#{item.id}]", 0, min: 0, max: item.ordered_quantity - (item.received_quantity || 0), class: "w-20 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex justify-end">
+          <%= submit_tag "Receive Stock", class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

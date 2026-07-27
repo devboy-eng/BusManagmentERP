@@ -56,6 +56,10 @@ gem "httparty", "~> 0.22"
 # Background job processing (SQLite-backed, no Redis needed)
 gem "solid_queue"
 
+# PDF generation
+gem "wicked_pdf"
+gem "wkhtmltopdf-binary"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

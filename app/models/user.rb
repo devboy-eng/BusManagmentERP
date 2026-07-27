@@ -2,13 +2,17 @@ class User < ApplicationRecord
   devise :database_authenticatable, :recoverable, :rememberable, :validatable
 
   FEATURES = {
-    dashboard:  "Dashboard",
-    customers:  "Customers",
-    leads:      "Leads",
-    users:      "Users",
-    roles:      "Roles & Privileges",
-    whatsapp:   "WhatsApp Marketing",
-    csat:       "CSAT Analytics"
+    dashboard: "Dashboard",
+    customers: "Customers",
+    vehicles: "Vehicles",
+    job_cards: "Job Cards",
+    estimates: "Estimates & Invoices",
+    inventory: "Inventory",
+    technicians: "Technicians",
+    reports: "Reports",
+    users: "Users",
+    roles: "Roles & Privileges",
+    whatsapp: "WhatsApp"
   }.freeze
 
   serialize :permissions, coder: JSON
@@ -21,6 +25,7 @@ class User < ApplicationRecord
   after_initialize :set_default_permissions, if: :new_record?
 
   belongs_to :role, optional: true
+  belongs_to :branch, optional: true
 
   scope :active, -> { where(active: true) }
   scope :inactive, -> { where(active: false) }
@@ -32,13 +37,11 @@ class User < ApplicationRecord
   def inactive_message
     active? ? super : :account_inactive
   end
+
   has_many :comments, dependent: :destroy
   has_many :customers
-  has_many :leads
   has_many :whatsapp_messages
   has_many :whatsapp_templates
-  has_many :follow_ups
-  has_many :csat_responses
   has_many :assigned_conversations, class_name: "WhatsappConversation", foreign_key: :assigned_user_id
   has_many :quick_responses
 

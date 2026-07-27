@@ -1,0 +1,100 @@
+<% content_for :page_title, "Purchase Orders" %>
+
+<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900">Purchase Orders</h2>
+    <p class="text-xs text-gray-500 mt-1"><%= @pagy.count %> total orders</p>
+  </div>
+  <div class="flex items-center gap-3">
+    <%= form_tag purchase_orders_path, method: :get, class: "flex items-center gap-2" do %>
+      <%= select_tag :status, options_for_select([["All Statuses", ""]] + PurchaseOrder.statuses.keys.map { |s| [s.humanize, s] }, params[:status]), class: "rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+      <%= submit_tag "Filter", class: "rounded-lg bg-gray-100 border border-gray-300 px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition cursor-pointer" %>
+      <% if params[:status].present? %>
+        <%= link_to "Clear", purchase_orders_path, class: "text-xs text-gray-500 hover:text-gray-900 transition" %>
+      <% end %>
+    <% end %>
+    <%= link_to new_purchase_order_path, class: "inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition" do %>
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      New PO
+    <% end %>
+  </div>
+</div>
+
+<div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead>
+        <tr class="border-b border-gray-200 bg-gray-50">
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PO Number</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warehouse</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expected Delivery</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% @purchase_orders.each do |po| %>
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-4 py-3 text-xs text-gray-900 font-medium"><%= po.po_number %></td>
+            <td class="px-4 py-3 text-xs text-gray-600"><%= po.supplier&.name %></td>
+            <td class="px-4 py-3 text-xs text-gray-600"><%= po.warehouse&.name %></td>
+            <td class="px-4 py-3 text-xs text-gray-600"><%= number_to_currency(po.total_amount, unit: "\u20B9") %></td>
+            <td class="px-4 py-3">
+              <% status_colors = { "draft" => "bg-gray-100 text-gray-800", "sent" => "bg-blue-100 text-blue-800", "partially_received" => "bg-yellow-100 text-yellow-800", "received" => "bg-green-100 text-green-800", "cancelled" => "bg-red-100 text-red-800" } %>
+              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium <%= status_colors[po.status] || 'bg-gray-100 text-gray-800' %>">
+                <%= po.status.humanize %>
+              </span>
+            </td>
+            <td class="px-4 py-3 text-xs text-gray-500"><%= po.expected_delivery_date&.strftime("%d %b %Y") || "-" %></td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2">
+                <%= link_to purchase_order_path(po), class: "text-gray-500 hover:text-indigo-600 transition", title: "View" do %>
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <% end %>
+                <% unless po.received? || po.cancelled? %>
+                  <%= link_to edit_purchase_order_path(po), class: "text-gray-500 hover:text-yellow-500 transition", title: "Edit" do %>
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                  <% end %>
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if @purchase_orders.empty? %>
+    <div class="text-center py-12">
+      <p class="mt-3 text-xs text-gray-500">No purchase orders found.</p>
+      <%= link_to "Create your first purchase order", new_purchase_order_path, class: "mt-2 inline-block text-xs text-indigo-600 hover:text-indigo-500" %>
+    </div>
+  <% end %>
+
+  <% if @pagy.pages > 1 %>
+    <div class="flex items-center justify-between border-t border-gray-200 px-4 py-3">
+      <p class="text-xs text-gray-500">Showing <%= @pagy.from %> to <%= @pagy.to %> of <%= @pagy.count %> results</p>
+      <nav class="flex items-center gap-1">
+        <% if @pagy.prev %>
+          <%= link_to url_for(request.query_parameters.merge(page: @pagy.prev)), class: "rounded-lg border border-gray-300 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100" do %>Prev<% end %>
+        <% end %>
+        <% @pagy.series.each do |item| %>
+          <% if item.is_a?(Integer) %>
+            <%= link_to item, url_for(request.query_parameters.merge(page: item)), class: "rounded-lg px-3 py-1.5 text-xs #{item == @pagy.page ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" %>
+          <% elsif item.is_a?(String) %>
+            <span class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs text-white"><%= item %></span>
+          <% elsif item == :gap %>
+            <span class="px-2 text-gray-500">...</span>
+          <% end %>
+        <% end %>
+        <% if @pagy.next %>
+          <%= link_to url_for(request.query_parameters.merge(page: @pagy.next)), class: "rounded-lg border border-gray-300 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100" do %>Next<% end %>
+        <% end %>
+      </nav>
+    </div>
+  <% end %>
+</div>

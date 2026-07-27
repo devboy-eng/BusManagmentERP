@@ -1,0 +1,84 @@
+<%= form_with(model: job_card, class: "space-y-6") do |f| %>
+  <% if job_card.errors.any? %>
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+      <p class="text-xs font-medium text-red-700"><%= pluralize(job_card.errors.count, "error") %> prevented this job card from being saved:</p>
+      <ul class="mt-2 list-disc list-inside text-xs text-red-600">
+        <% job_card.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <!-- Customer & Vehicle -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Customer *</label>
+      <%= f.collection_select :customer_id, @customers, :id, :name, { prompt: "Select a customer" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Vehicle *</label>
+      <%= f.collection_select :vehicle_id, @vehicles, :id, :display_name, { prompt: "Select a vehicle" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+  </div>
+
+  <!-- Branch & Service Advisor -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Branch *</label>
+      <%= f.collection_select :branch_id, @branches, :id, :name, { prompt: "Select a branch" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Service Advisor</label>
+      <%= f.collection_select :service_advisor_id, @users, :id, :name, { prompt: "Select service advisor" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+  </div>
+
+  <!-- Service Type & Priority -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Service Type</label>
+      <%= f.collection_select :service_type_id, @service_types, :id, :name, { prompt: "Select service type" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Priority</label>
+      <%= f.select :priority, options_for_select([["Normal", "normal"], ["Urgent", "urgent"], ["Critical", "critical"]], job_card.priority || "normal"), {}, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+  </div>
+
+  <!-- Odometer & Dates -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Odometer Reading (km)</label>
+      <%= f.number_field :odometer_reading, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Current odometer reading", min: 0 %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Checked In At</label>
+      <%= f.datetime_local_field :checked_in_at, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Estimated Completion</label>
+      <%= f.datetime_local_field :estimated_completion_at, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+  </div>
+
+  <!-- Customer Complaints -->
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1.5">Customer Complaints</label>
+    <%= f.text_area :customer_complaints, rows: 4, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Describe the customer's complaints or issues..." %>
+  </div>
+
+  <!-- Advisor Notes -->
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1.5">Advisor Notes</label>
+    <%= f.text_area :advisor_notes, rows: 3, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Internal notes from the service advisor..." %>
+  </div>
+
+  <div class="flex items-center gap-3 pt-2">
+    <%= f.submit class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+    <%= link_to "Cancel", job_cards_path, class: "rounded-lg border border-gray-300 px-6 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" %>
+  </div>
+<% end %>

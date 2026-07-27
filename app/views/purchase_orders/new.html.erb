@@ -1,0 +1,12 @@
+<% content_for :page_title, "New Purchase Order" %>
+
+<div class="max-w-4xl">
+  <div class="mb-6">
+    <h2 class="text-lg font-semibold text-gray-900">New Purchase Order</h2>
+    <p class="text-xs text-gray-500 mt-1">Fill in the details below to create a new purchase order.</p>
+  </div>
+
+  <div class="rounded-xl border border-gray-200 bg-white p-6">
+    <%= render "form", purchase_order: @purchase_order %>
+  </div>
+</div>

@@ -1,0 +1,129 @@
+<% content_for :page_title, "Estimate #{@estimate.estimate_number}" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900"><%= @estimate.estimate_number %></h2>
+    <p class="text-xs text-gray-500 mt-1">Job Card: <%= @job_card.job_card_number %></p>
+  </div>
+  <div class="flex items-center gap-3">
+    <% unless @estimate.approved? || @estimate.rejected? %>
+      <%= link_to edit_job_card_estimate_path(@job_card, @estimate), class: "inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" do %>
+        Edit
+      <% end %>
+    <% end %>
+    <%= link_to job_card_path(@job_card), class: "inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" do %>
+      Back to Job Card
+    <% end %>
+  </div>
+</div>
+
+<div class="space-y-6">
+  <div class="rounded-xl border border-gray-200 bg-white p-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-4">Estimate Details</h3>
+    <dl class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="rounded-lg bg-gray-50 p-3">
+        <dt class="text-[11px] text-gray-500">Estimate Number</dt>
+        <dd class="text-xs text-gray-900 mt-1"><%= @estimate.estimate_number %></dd>
+      </div>
+      <div class="rounded-lg bg-gray-50 p-3">
+        <dt class="text-[11px] text-gray-500">Status</dt>
+        <dd class="mt-1">
+          <% est_colors = { "draft" => "bg-gray-100 text-gray-800", "sent" => "bg-blue-100 text-blue-800", "approved" => "bg-green-100 text-green-800", "rejected" => "bg-red-100 text-red-800", "revised" => "bg-yellow-100 text-yellow-800" } %>
+          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium <%= est_colors[@estimate.status] || 'bg-gray-100 text-gray-800' %>">
+            <%= @estimate.status.humanize %>
+          </span>
+        </dd>
+      </div>
+      <div class="rounded-lg bg-gray-50 p-3">
+        <dt class="text-[11px] text-gray-500">Created By</dt>
+        <dd class="text-xs text-gray-900 mt-1"><%= @estimate.created_by&.name %></dd>
+      </div>
+    </dl>
+  </div>
+
+  <!-- Line Items -->
+  <div class="rounded-xl border border-gray-200 bg-white p-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-4">Line Items</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-200 bg-gray-50">
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% @estimate.line_items.each do |item| %>
+            <tr>
+              <td class="px-4 py-2">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium <%= item.item_type == 'labor' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800' %>">
+                  <%= item.item_type.capitalize %>
+                </span>
+              </td>
+              <td class="px-4 py-2 text-xs text-gray-900"><%= item.description %></td>
+              <td class="px-4 py-2 text-xs text-gray-600"><%= item.quantity %></td>
+              <td class="px-4 py-2 text-xs text-gray-600"><%= number_to_currency(item.unit_price, unit: "\u20B9") %></td>
+              <td class="px-4 py-2 text-xs text-gray-900 font-medium"><%= number_to_currency(item.total_price, unit: "\u20B9") %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tax Breakdown -->
+  <div class="rounded-xl border border-gray-200 bg-white p-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-4">Summary</h3>
+    <div class="max-w-sm ml-auto space-y-2">
+      <div class="flex justify-between text-xs">
+        <span class="text-gray-500">Labor Total</span>
+        <span class="text-gray-900"><%= number_to_currency(@estimate.labor_total, unit: "\u20B9") %></span>
+      </div>
+      <div class="flex justify-between text-xs">
+        <span class="text-gray-500">Parts Total</span>
+        <span class="text-gray-900"><%= number_to_currency(@estimate.parts_total, unit: "\u20B9") %></span>
+      </div>
+      <div class="flex justify-between text-xs border-t border-gray-200 pt-2">
+        <span class="text-gray-500">Subtotal</span>
+        <span class="text-gray-900"><%= number_to_currency(@estimate.subtotal, unit: "\u20B9") %></span>
+      </div>
+      <% if @estimate.discount_amount.present? && @estimate.discount_amount > 0 %>
+        <div class="flex justify-between text-xs">
+          <span class="text-gray-500">Discount</span>
+          <span class="text-red-600">-<%= number_to_currency(@estimate.discount_amount, unit: "\u20B9") %></span>
+        </div>
+      <% end %>
+      <% if @estimate.cgst_amount.present? && @estimate.cgst_amount > 0 %>
+        <div class="flex justify-between text-xs">
+          <span class="text-gray-500">CGST (<%= @estimate.cgst_rate %>%)</span>
+          <span class="text-gray-900"><%= number_to_currency(@estimate.cgst_amount, unit: "\u20B9") %></span>
+        </div>
+      <% end %>
+      <% if @estimate.sgst_amount.present? && @estimate.sgst_amount > 0 %>
+        <div class="flex justify-between text-xs">
+          <span class="text-gray-500">SGST (<%= @estimate.sgst_rate %>%)</span>
+          <span class="text-gray-900"><%= number_to_currency(@estimate.sgst_amount, unit: "\u20B9") %></span>
+        </div>
+      <% end %>
+      <% if @estimate.igst_amount.present? && @estimate.igst_amount > 0 %>
+        <div class="flex justify-between text-xs">
+          <span class="text-gray-500">IGST (<%= @estimate.igst_rate %>%)</span>
+          <span class="text-gray-900"><%= number_to_currency(@estimate.igst_amount, unit: "\u20B9") %></span>
+        </div>
+      <% end %>
+      <div class="flex justify-between text-sm font-bold border-t border-gray-300 pt-2">
+        <span class="text-gray-900">Grand Total</span>
+        <span class="text-gray-900"><%= number_to_currency(@estimate.grand_total, unit: "\u20B9") %></span>
+      </div>
+    </div>
+    <% if @estimate.notes.present? %>
+      <div class="rounded-lg bg-gray-50 p-3 mt-4">
+        <dt class="text-[11px] text-gray-500">Notes</dt>
+        <dd class="text-xs text-gray-900 mt-1"><%= @estimate.notes %></dd>
+      </div>
+    <% end %>
+  </div>
+</div>

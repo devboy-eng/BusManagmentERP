@@ -1,0 +1,55 @@
+<% content_for :page_title, "Record Payment" %>
+
+<div class="max-w-3xl">
+  <div class="mb-6">
+    <h2 class="text-lg font-semibold text-gray-900">Record Payment</h2>
+    <p class="text-xs text-gray-500 mt-1">Invoice: <%= @invoice.invoice_number %> | Balance Due: <%= number_to_currency(@invoice.balance_due, unit: "\u20B9") %></p>
+  </div>
+
+  <div class="rounded-xl border border-gray-200 bg-white p-6">
+    <%= form_with(model: @payment, class: "space-y-6") do |f| %>
+      <% if @payment.errors.any? %>
+        <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+          <p class="text-xs font-medium text-red-700"><%= pluralize(@payment.errors.count, "error") %> prevented this payment from being saved:</p>
+          <ul class="mt-2 list-disc list-inside text-xs text-red-600">
+            <% @payment.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <%= f.hidden_field :invoice_id %>
+      <%= f.hidden_field :customer_id %>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1.5">Amount *</label>
+          <%= f.number_field :amount, step: 0.01, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter amount" %>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1.5">Payment Method *</label>
+          <%= f.select :payment_method, Payment.payment_methods.keys.map { |m| [m.humanize, m] }, { include_blank: "Select method" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1.5">Transaction Reference</label>
+          <%= f.text_field :transaction_reference, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. UPI ref, cheque no." %>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1.5">Payment Date *</label>
+          <%= f.datetime_local_field :paid_at, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Notes</label>
+        <%= f.text_area :notes, rows: 2, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Payment notes" %>
+      </div>
+
+      <div class="flex items-center gap-3 pt-2">
+        <%= f.submit "Record Payment", class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+        <%= link_to "Cancel", invoice_path(@invoice), class: "rounded-lg border border-gray-300 px-6 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" %>
+      </div>
+    <% end %>
+  </div>
+</div>

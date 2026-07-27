@@ -1,0 +1,65 @@
+<% content_for :page_title, "New Inspection" %>
+
+<div class="max-w-4xl">
+  <div class="mb-6">
+    <h2 class="text-lg font-semibold text-gray-900">New Inspection</h2>
+    <p class="text-xs text-gray-500 mt-1">Job Card: <%= @job_card.job_card_number %> | Vehicle: <%= @job_card.vehicle&.display_name %></p>
+  </div>
+
+  <div class="rounded-xl border border-gray-200 bg-white p-6">
+    <%= form_with(model: [@job_card, @inspection], class: "space-y-6") do |f| %>
+      <% if @inspection.errors.any? %>
+        <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+          <p class="text-xs font-medium text-red-700"><%= pluralize(@inspection.errors.count, "error") %> prevented this inspection from being saved:</p>
+          <ul class="mt-2 list-disc list-inside text-xs text-red-600">
+            <% @inspection.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1.5">Overall Condition</label>
+          <%= f.select :overall_condition, Inspection.overall_conditions.keys.map { |c| [c.humanize, c] }, {}, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">General Notes</label>
+        <%= f.text_area :general_notes, rows: 3, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "General inspection notes" %>
+      </div>
+
+      <!-- Inspection Items -->
+      <div>
+        <h4 class="text-sm font-semibold text-gray-900 mb-3">Inspection Items</h4>
+        <div class="space-y-3">
+          <%= f.fields_for :inspection_items do |ii_f| %>
+            <div class="rounded-lg border border-gray-200 p-3">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1">Area</label>
+                  <%= ii_f.text_field :area, readonly: true, class: "w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900" %>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1">Condition</label>
+                  <%= ii_f.select :condition, InspectionItem.conditions.keys.map { |c| [c.humanize, c] }, {}, class: "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1">Notes</label>
+                  <%= ii_f.text_field :notes, class: "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Notes" %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 pt-2">
+        <%= f.submit "Complete Inspection", class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+        <%= link_to "Cancel", job_card_path(@job_card), class: "rounded-lg border border-gray-300 px-6 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" %>
+      </div>
+    <% end %>
+  </div>
+</div>

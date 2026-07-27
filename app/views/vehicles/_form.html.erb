@@ -1,0 +1,140 @@
+<%= form_with(model: vehicle, class: "space-y-6") do |f| %>
+  <% if vehicle.errors.any? %>
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+      <p class="text-xs font-medium text-red-700"><%= pluralize(vehicle.errors.count, "error") %> prevented this vehicle from being saved:</p>
+      <ul class="mt-2 list-disc list-inside text-xs text-red-600">
+        <% vehicle.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <!-- Customer & Registration -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Customer *</label>
+      <%= f.collection_select :customer_id, @customers, :id, :name, { prompt: "Select a customer" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Registration Number *</label>
+      <%= f.text_field :registration_number, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. KA-01-AB-1234" %>
+    </div>
+  </div>
+
+  <!-- VIN & Make / Model -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">VIN</label>
+      <%= f.text_field :vin, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Vehicle Identification Number" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Make *</label>
+      <%= f.text_field :make, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Tata, Ashok Leyland" %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Model</label>
+      <%= f.text_field :model, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Starbus, Viking" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Year of Manufacture</label>
+      <%= f.number_field :year_of_manufacture, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 2022", min: 1980, max: Date.current.year + 1 %>
+    </div>
+  </div>
+
+  <!-- Engine & Chassis -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Engine Number</label>
+      <%= f.text_field :engine_number, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter engine number" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Chassis Number</label>
+      <%= f.text_field :chassis_number, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter chassis number" %>
+    </div>
+  </div>
+
+  <!-- Fuel, Seating, Odometer, Color -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Fuel Type</label>
+      <%= f.select :fuel_type, options_for_select([["Diesel", "diesel"], ["Petrol", "petrol"], ["CNG", "cng"], ["Electric", "electric"]], vehicle.fuel_type), { prompt: "Select fuel type" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Seating Capacity</label>
+      <%= f.number_field :seating_capacity, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 52", min: 1 %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Current Odometer (km)</label>
+      <%= f.number_field :current_odometer, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. 45000", min: 0 %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Color</label>
+      <%= f.text_field :color, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. White" %>
+    </div>
+  </div>
+
+  <!-- Insurance -->
+  <div class="border-t border-gray-200 pt-5">
+    <h4 class="text-xs font-semibold text-gray-700 mb-4">Insurance Details</h4>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Insurance Provider</label>
+        <%= f.text_field :insurance_provider, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. ICICI Lombard" %>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Policy Number</label>
+        <%= f.text_field :insurance_policy_number, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter policy number" %>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Insurance Expiry Date</label>
+        <%= f.date_field :insurance_expiry_date, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document Expiry -->
+  <div class="border-t border-gray-200 pt-5">
+    <h4 class="text-xs font-semibold text-gray-700 mb-4">Document Expiry Dates</h4>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Fitness Certificate Expiry</label>
+        <%= f.date_field :fitness_certificate_expiry, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Permit Expiry Date</label>
+        <%= f.date_field :permit_expiry_date, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">PUC Expiry Date</label>
+        <%= f.date_field :puc_expiry_date, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes & Status -->
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1.5">Notes</label>
+    <%= f.text_area :notes, rows: 3, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Any additional notes..." %>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Status</label>
+      <%= f.select :status, options_for_select([["Active", "active"], ["Inactive", "inactive"], ["Scrapped", "scrapped"]], vehicle.status || "active"), {}, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3 pt-2">
+    <%= f.submit class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+    <%= link_to "Cancel", vehicles_path, class: "rounded-lg border border-gray-300 px-6 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" %>
+  </div>
+<% end %>

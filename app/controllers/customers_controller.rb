@@ -11,9 +11,9 @@ class CustomersController < ApplicationController
       elsif search.downcase == "inactive"
         @customers = @customers.where(active: false)
       else
-        @customers = @customers.where("name LIKE ? OR phone LIKE ? OR email LIKE ? OR pan LIKE ? OR gst LIKE ? OR trademark LIKE ?",
+        @customers = @customers.where("name LIKE ? OR phone LIKE ? OR email LIKE ? OR company_name LIKE ? OR gst_number LIKE ?",
           "%#{search}%", "%#{search}%", "%#{search}%",
-          "%#{search}%", "%#{search}%", "%#{search}%")
+          "%#{search}%", "%#{search}%")
       end
     end
 
@@ -30,7 +30,7 @@ class CustomersController < ApplicationController
   def show
     @comments = @customer.comments.includes(:user)
     @comment = Comment.new
-    @whatsapp_messages = @customer.whatsapp_messages.recent.limit(5)
+    @vehicles = @customer.vehicles.order(:registration_number) if @customer.respond_to?(:vehicles)
   end
 
   def new
@@ -92,9 +92,8 @@ class CustomersController < ApplicationController
         phone: row["phone"],
         email: row["email"] || row["email id"],
         address: row["address"],
-        pan: row["pan"],
-        gst: row["gst"],
-        trademark: row["trademark"],
+        company_name: row["company_name"],
+        gst_number: row["gst_number"],
         user: current_user
       )
       count += 1
@@ -112,6 +111,7 @@ class CustomersController < ApplicationController
   end
 
   def customer_params
-    params.require(:customer).permit(:name, :phone, :email, :address, :pan, :gst, :trademark, :status)
+    params.require(:customer).permit(:name, :phone, :alternate_phone, :email, :customer_type,
+      :company_name, :gst_number, :city, :state, :address, :notes, :status, :branch_id)
   end
 end

@@ -1,0 +1,157 @@
+<% content_for :page_title, "Vehicle Details" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900"><%= @vehicle.registration_number %></h2>
+    <p class="text-xs text-gray-500 mt-1"><%= @vehicle.make %> <%= @vehicle.model %> &middot; <%= @vehicle.customer.name %></p>
+  </div>
+  <div class="flex items-center gap-3">
+    <%= link_to service_history_vehicle_path(@vehicle), class: "inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" do %>
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      Service History
+    <% end %>
+    <%= link_to edit_vehicle_path(@vehicle), class: "inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" do %>
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+      Edit
+    <% end %>
+    <%= link_to vehicles_path, class: "inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" do %>
+      Back to List
+    <% end %>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Vehicle Info -->
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Basic Details -->
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <h3 class="text-sm font-semibold text-gray-900 mb-4">Vehicle Information</h3>
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Registration Number</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.registration_number %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Make / Model</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.make %> <%= @vehicle.model %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Year of Manufacture</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.year_of_manufacture || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">VIN</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.vin || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Engine Number</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.engine_number || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Chassis Number</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.chassis_number || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Fuel Type</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.fuel_type&.titleize || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Seating Capacity</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.seating_capacity || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Current Odometer</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.current_odometer ? "#{number_with_delimiter(@vehicle.current_odometer)} km" : "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Color</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.color || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Status</dt>
+          <dd class="mt-1"><%= status_badge(@vehicle.status, :vehicle) %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Customer</dt>
+          <dd class="text-xs mt-1">
+            <%= link_to @vehicle.customer.name, customer_path(@vehicle.customer), class: "text-indigo-600 hover:text-indigo-500 transition" %>
+          </dd>
+        </div>
+      </dl>
+      <% if @vehicle.notes.present? %>
+        <div class="rounded-lg bg-gray-50 p-3 mt-4">
+          <dt class="text-[11px] text-gray-500">Notes</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.notes %></dd>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Insurance & Documents -->
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <h3 class="text-sm font-semibold text-gray-900 mb-4">Insurance & Documents</h3>
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Insurance Provider</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.insurance_provider || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Policy Number</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @vehicle.insurance_policy_number || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Insurance Expiry</dt>
+          <dd class="text-xs mt-1 <%= @vehicle.insurance_expiry_date.present? && @vehicle.insurance_expiry_date <= 30.days.from_now ? 'text-red-600 font-medium' : 'text-gray-900' %>">
+            <%= @vehicle.insurance_expiry_date&.strftime("%d %b %Y") || "-" %>
+          </dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Fitness Certificate Expiry</dt>
+          <dd class="text-xs mt-1 <%= @vehicle.fitness_certificate_expiry.present? && @vehicle.fitness_certificate_expiry <= 30.days.from_now ? 'text-red-600 font-medium' : 'text-gray-900' %>">
+            <%= @vehicle.fitness_certificate_expiry&.strftime("%d %b %Y") || "-" %>
+          </dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Permit Expiry</dt>
+          <dd class="text-xs mt-1 <%= @vehicle.permit_expiry_date.present? && @vehicle.permit_expiry_date <= 30.days.from_now ? 'text-red-600 font-medium' : 'text-gray-900' %>">
+            <%= @vehicle.permit_expiry_date&.strftime("%d %b %Y") || "-" %>
+          </dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">PUC Expiry</dt>
+          <dd class="text-xs mt-1 <%= @vehicle.puc_expiry_date.present? && @vehicle.puc_expiry_date <= 30.days.from_now ? 'text-red-600 font-medium' : 'text-gray-900' %>">
+            <%= @vehicle.puc_expiry_date&.strftime("%d %b %Y") || "-" %>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <!-- Recent Job Cards -->
+  <div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-semibold text-gray-900">Recent Job Cards</h3>
+        <%= link_to new_job_card_path(vehicle_id: @vehicle.id, customer_id: @vehicle.customer_id), class: "text-xs text-indigo-600 hover:text-indigo-500 transition" do %>
+          + New Job Card
+        <% end %>
+      </div>
+      <% if @job_cards.any? %>
+        <div class="space-y-3">
+          <% @job_cards.each do |jc| %>
+            <%= link_to job_card_path(jc), class: "block rounded-lg bg-gray-50 p-3 hover:bg-gray-100 transition" do %>
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-medium text-gray-900"><%= jc.job_card_number %></span>
+                <%= status_badge(jc.status, :job_card) %>
+              </div>
+              <p class="text-[11px] text-gray-500"><%= jc.service_type&.name || "General Service" %></p>
+              <p class="text-[11px] text-gray-400 mt-1"><%= jc.checked_in_at&.strftime("%d %b %Y, %I:%M %p") %></p>
+            <% end %>
+          <% end %>
+        </div>
+        <%= link_to "View All Service History", service_history_vehicle_path(@vehicle), class: "block text-center mt-4 text-xs text-indigo-600 hover:text-indigo-500 transition" %>
+      <% else %>
+        <p class="text-xs text-gray-500 text-center py-4">No job cards for this vehicle yet.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

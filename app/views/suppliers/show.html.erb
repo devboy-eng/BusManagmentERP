@@ -1,0 +1,88 @@
+<% content_for :page_title, "Supplier Details" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900"><%= @supplier.name %></h2>
+    <p class="text-xs text-gray-500 mt-1">Supplier details and recent purchase orders</p>
+  </div>
+  <div class="flex items-center gap-3">
+    <%= link_to edit_supplier_path(@supplier), class: "inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" do %>
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+      Edit
+    <% end %>
+    <%= link_to suppliers_path, class: "inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" do %>
+      Back to List
+    <% end %>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-6">
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <h3 class="text-sm font-semibold text-gray-900 mb-4">Supplier Information</h3>
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Name</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @supplier.name %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Contact Person</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @supplier.contact_person || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Phone</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @supplier.phone || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Email</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @supplier.email || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">GST Number</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @supplier.gst_number || "-" %></dd>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-3">
+          <dt class="text-[11px] text-gray-500">Status</dt>
+          <dd class="mt-1">
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium <%= @supplier.active? ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+              <%= @supplier.active? ? "Active" : "Inactive" %>
+            </span>
+          </dd>
+        </div>
+      </dl>
+      <% if @supplier.address.present? %>
+        <div class="rounded-lg bg-gray-50 p-3 mt-4">
+          <dt class="text-[11px] text-gray-500">Address</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @supplier.address %></dd>
+        </div>
+      <% end %>
+      <% if @supplier.notes.present? %>
+        <div class="rounded-lg bg-gray-50 p-3 mt-4">
+          <dt class="text-[11px] text-gray-500">Notes</dt>
+          <dd class="text-xs text-gray-900 mt-1"><%= @supplier.notes %></dd>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <h3 class="text-sm font-semibold text-gray-900 mb-4">Recent Purchase Orders</h3>
+      <% if @purchase_orders.any? %>
+        <div class="space-y-3">
+          <% @purchase_orders.each do |po| %>
+            <div class="rounded-lg bg-gray-50 p-3">
+              <%= link_to purchase_order_path(po), class: "text-xs font-medium text-indigo-600 hover:text-indigo-500" do %>
+                <%= po.po_number %>
+              <% end %>
+              <p class="text-[11px] text-gray-500 mt-1"><%= number_to_currency(po.total_amount, unit: "\u20B9") %> - <%= po.status.humanize %></p>
+              <p class="text-[11px] text-gray-400 mt-0.5"><%= po.created_at.strftime("%d %b %Y") %></p>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-xs text-gray-500 text-center py-4">No purchase orders yet.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

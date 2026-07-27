@@ -1,0 +1,45 @@
+<%= form_with(model: reminder, url: reminder.persisted? ? service_reminder_path(reminder) : service_reminders_path, class: "space-y-6") do |f| %>
+  <% if reminder.errors.any? %>
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+      <p class="text-xs font-medium text-red-700"><%= pluralize(reminder.errors.count, "error") %> prevented this reminder from being saved:</p>
+      <ul class="mt-2 list-disc list-inside text-xs text-red-600">
+        <% reminder.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Vehicle *</label>
+      <%= f.collection_select :vehicle_id, @vehicles, :id, :display_name, { include_blank: "Select vehicle" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Reminder Type *</label>
+      <%= f.select :reminder_type, ServiceReminder::REMINDER_TYPES.map { |t| [t.humanize, t] }, { include_blank: "Select type" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Due Date *</label>
+      <%= f.date_field :due_date, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Odometer Due At (km)</label>
+      <%= f.number_field :odometer_due_at, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter odometer reading" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Status</label>
+      <%= f.select :status, ServiceReminder.statuses.keys.map { |s| [s.humanize, s] }, {}, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+  </div>
+
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1.5">Notes</label>
+    <%= f.text_area :notes, rows: 3, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Additional notes" %>
+  </div>
+
+  <div class="flex items-center gap-3 pt-2">
+    <%= f.submit class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+    <%= link_to "Cancel", service_reminders_path, class: "rounded-lg border border-gray-300 px-6 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" %>
+  </div>
+<% end %>

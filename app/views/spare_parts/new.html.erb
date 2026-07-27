@@ -1,0 +1,12 @@
+<% content_for :page_title, "Add Spare Part" %>
+
+<div class="max-w-3xl">
+  <div class="mb-6">
+    <h2 class="text-lg font-semibold text-gray-900">Add New Spare Part</h2>
+    <p class="text-xs text-gray-500 mt-1">Fill in the details below to add a new spare part.</p>
+  </div>
+
+  <div class="rounded-xl border border-gray-200 bg-white p-6">
+    <%= render "form", spare_part: @spare_part %>
+  </div>
+</div>

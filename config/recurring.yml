@@ -1,30 +1,9 @@
-development:
-  process_scheduled_follow_ups:
-    class: ProcessScheduledFollowUpsJob
-    schedule: every 1 minute
-  process_scheduled_messages:
-    class: ProcessScheduledMessagesJob
-    schedule: every 1 minute
-  process_follow_up_campaigns:
-    class: ProcessFollowUpCampaignsJob
-    schedule: every 1 minute
-  sync_whatsapp_quality:
-    class: SyncWhatsappQualityJob
-    schedule: every 6 hours
-
-production:
-  process_scheduled_follow_ups:
-    class: ProcessScheduledFollowUpsJob
-    schedule: every 1 minute
-  process_scheduled_messages:
-    class: ProcessScheduledMessagesJob
-    schedule: every 1 minute
-  process_follow_up_campaigns:
-    class: ProcessFollowUpCampaignsJob
-    schedule: every 1 minute
-  sync_whatsapp_quality:
-    class: SyncWhatsappQualityJob
-    schedule: every 6 hours
-  clear_solid_queue_finished_jobs:
-    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
-    schedule: every hour at minute 12
+service_reminders:
+  class: ProcessServiceRemindersJob
+  schedule: every day at 9am
+low_stock_alerts:
+  class: LowStockAlertJob
+  schedule: every day at 8am
+expiry_alerts:
+  class: ExpiryAlertJob
+  schedule: every day at 8am

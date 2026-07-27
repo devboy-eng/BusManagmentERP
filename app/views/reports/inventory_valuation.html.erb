@@ -1,0 +1,50 @@
+<% content_for :page_title, "Inventory Valuation" %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900">Inventory Valuation</h2>
+    <p class="text-xs text-gray-500 mt-1">Current stock value across all active parts</p>
+  </div>
+  <%= link_to reports_path, class: "inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" do %>
+    Back to Reports
+  <% end %>
+</div>
+
+<div class="rounded-xl border border-gray-200 bg-white p-4 mb-6">
+  <p class="text-[11px] text-gray-500 uppercase">Total Inventory Value</p>
+  <p class="text-2xl font-bold text-gray-900 mt-1"><%= number_to_currency(@total_value, unit: "\u20B9") %></p>
+</div>
+
+<div class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead>
+        <tr class="border-b border-gray-200 bg-gray-50">
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Part Number</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Price</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% @spare_parts.each do |part| %>
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-4 py-3 text-xs text-gray-600"><%= part.part_number %></td>
+            <td class="px-4 py-3 text-xs text-gray-900 font-medium"><%= part.name %></td>
+            <td class="px-4 py-3 text-xs text-gray-600"><%= part.category || "-" %></td>
+            <td class="px-4 py-3 text-xs text-gray-600"><%= part.current_stock %></td>
+            <td class="px-4 py-3 text-xs text-gray-600"><%= number_to_currency(part.cost_price, unit: "\u20B9") %></td>
+            <td class="px-4 py-3 text-xs text-gray-900 font-medium"><%= number_to_currency(part.current_stock * part.cost_price, unit: "\u20B9") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <% if @spare_parts.empty? %>
+    <div class="text-center py-12">
+      <p class="text-xs text-gray-500">No active spare parts found.</p>
+    </div>
+  <% end %>
+</div>

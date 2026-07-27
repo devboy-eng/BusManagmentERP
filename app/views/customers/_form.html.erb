@@ -20,26 +20,43 @@
       <%= f.text_field :phone, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter phone number" %>
     </div>
     <div>
-      <label class="block text-xs font-medium text-gray-600 mb-1.5">Email ID</label>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Email</label>
       <%= f.email_field :email, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter email" %>
     </div>
     <div>
-      <label class="block text-xs font-medium text-gray-600 mb-1.5">PAN</label>
-      <%= f.text_field :pan, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter PAN number" %>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Customer Type</label>
+      <%= f.select :customer_type, options_for_select([["Individual", "individual"], ["Company", "company"], ["Fleet Owner", "fleet_owner"], ["Government", "government"]], customer.customer_type), { include_blank: "Select type" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
     </div>
     <div>
-      <label class="block text-xs font-medium text-gray-600 mb-1.5">GST</label>
-      <%= f.text_field :gst, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter GST number" %>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Company Name</label>
+      <%= f.text_field :company_name, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter company name" %>
     </div>
     <div>
-      <label class="block text-xs font-medium text-gray-600 mb-1.5">Trademark</label>
-      <%= f.text_field :trademark, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter trademark" %>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">GST Number</label>
+      <%= f.text_field :gst_number, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter GST number" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Alternate Phone</label>
+      <%= f.text_field :alternate_phone, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter alternate phone" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">City</label>
+      <%= f.text_field :city, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter city" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">State</label>
+      <%= f.text_field :state, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter state" %>
     </div>
   </div>
 
   <div>
     <label class="block text-xs font-medium text-gray-600 mb-1.5">Address</label>
     <%= f.text_area :address, rows: 3, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter address" %>
+  </div>
+
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1.5">Notes</label>
+    <%= f.text_area :notes, rows: 3, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Any additional notes about this customer..." %>
   </div>
 
   <div class="flex items-center gap-3 pt-2">

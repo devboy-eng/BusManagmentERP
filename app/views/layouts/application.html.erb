@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full bg-gray-100">
 <head>
-  <title>FinanceERP</title>
+  <title><%= content_for?(:page_title) ? "#{yield(:page_title)} | Bus Service Pro" : "Bus Service Pro" %></title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
@@ -9,158 +9,166 @@
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   <%= javascript_importmap_tags %>
 </head>
-<body class="h-full bg-gray-50 text-gray-700" data-controller="sidebar">
-  <div class="flex h-full">
+<body class="h-full" data-controller="sidebar">
+  <% if user_signed_in? %>
+    <!-- Mobile sidebar overlay -->
+    <div data-sidebar-target="overlay" class="hidden fixed inset-0 z-40 bg-gray-600/75 lg:hidden" data-action="click->sidebar#close"></div>
+
     <!-- Sidebar -->
-    <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300" data-sidebar-target="menu">
-      <!-- Logo -->
-      <div class="flex h-14 items-center gap-3 px-6 border-b border-gray-200">
-        <div class="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-          <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+    <aside data-sidebar-target="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-200" role="navigation">
+      <div class="flex h-full flex-col">
+        <!-- Logo -->
+        <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-200">
+          <svg class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.079-.504 1.025-1.122a18.97 18.97 0 00-3.07-8.428m0 0A18.97 18.97 0 0012 3.75c-2.472 0-4.786.684-6.762 1.95m13.524 0l-2.012 3.35M3.375 14.25V6.375c0-.621.504-1.125 1.125-1.125h4.5" />
           </svg>
+          <span class="text-base font-bold text-gray-900">Bus Service Pro</span>
         </div>
-        <span class="text-base font-bold text-gray-900">FinanceERP</span>
-      </div>
 
-      <!-- Navigation -->
-      <nav class="flex-1 overflow-y-auto px-4 py-4 space-y-1">
-        <%= link_to root_path, class: "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition #{controller_name == 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'}" do %>
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
-          </svg>
-          Dashboard
-        <% end %>
-
-        <% if can_access?(:customers) %>
-        <%= link_to customers_path, class: "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition #{controller_name == 'customers' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'}" do %>
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-          </svg>
-          Customers
-        <% end %>
-        <% end %>
-
-        <% if can_access?(:leads) %>
-        <%= link_to leads_path, class: "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition #{controller_name == 'leads' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'}" do %>
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-          </svg>
-          Leads
-        <% end %>
-        <% end %>
-
-        <% if can_access?(:csat) %>
-        <%= link_to csat_index_path, class: "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition #{controller_name == 'csat' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'}" do %>
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-          </svg>
-          CSAT
-        <% end %>
-        <% end %>
-
-        <!-- Settings Dropdown -->
-        <% if can_access?(:users) || can_access?(:roles) %>
-        <div data-controller="dropdown">
-          <button data-action="click->dropdown#toggle" class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition <%= controller_name.in?(%w[users roles]) ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900' %>">
-            <span class="flex items-center gap-3">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              Settings
-            </span>
-            <svg class="h-3.5 w-3.5 transition-transform" data-dropdown-target="arrow" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
-          </button>
-          <div class="mt-1 space-y-1 pl-11 hidden" data-dropdown-target="menu">
-            <% if can_access?(:users) %>
-            <%= link_to "Users", users_path, class: "block rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'users' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" %>
-            <% end %>
-            <% if can_access?(:roles) %>
-            <%= link_to "Roles & Privileges", roles_path, class: "block rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'roles' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" %>
-            <% end %>
-          </div>
-        </div>
-        <% end %>
-
-        <!-- WhatsApp Dropdown -->
-        <% if can_access?(:whatsapp) %>
-        <div data-controller="dropdown">
-          <button data-action="click->dropdown#toggle" class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition <%= controller_name.in?(%w[whatsapp_marketing whatsapp_settings whatsapp_templates whatsapp_chats follow_ups quick_responses auto_reply_rules scheduled_messages whatsapp_menus whatsapp_guide]) ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900' %>">
-            <span class="flex items-center gap-3">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-              </svg>
-              WhatsApp
-            </span>
-            <svg class="h-3.5 w-3.5 transition-transform" data-dropdown-target="arrow" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
-          </button>
-          <div class="mt-1 space-y-1 pl-11 hidden" data-dropdown-target="menu">
-            <%= link_to "Dashboard", whatsapp_marketing_index_path, class: "block rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'whatsapp_marketing' && action_name == 'index' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" %>
-            <%= link_to "Chat", whatsapp_chats_path, class: "block rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'whatsapp_chats' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" %>
-            <%= link_to "Message Log", message_log_whatsapp_marketing_index_path, class: "block rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'whatsapp_marketing' && action_name == 'message_log' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" %>
-            <%= link_to "Templates", whatsapp_templates_path, class: "block rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'whatsapp_templates' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" %>
-            <%= link_to "Follow-ups", follow_ups_path, class: "block rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'follow_ups' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" %>
-            <%= link_to "Quick Responses", quick_responses_path, class: "block rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'quick_responses' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" %>
-            <%= link_to "Auto-Reply Rules", auto_reply_rules_path, class: "block rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'auto_reply_rules' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" %>
-            <%= link_to "Interactive Menus", whatsapp_menus_path, class: "block rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'whatsapp_menus' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" %>
-            <%= link_to "Scheduled Messages", scheduled_messages_path, class: "block rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'scheduled_messages' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" %>
-            <%= link_to "Settings", edit_whatsapp_setting_path, class: "block rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'whatsapp_settings' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" %>
-            <%= link_to whatsapp_guide_path, class: "flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs transition #{controller_name == 'whatsapp_guide' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}" do %>
-              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
-              Guide
-            <% end %>
-          </div>
-        </div>
-        <% end %>
-      </nav>
-
-      <!-- User Info -->
-      <div class="border-t border-gray-200 p-4">
-        <div class="flex items-center gap-3">
-          <div class="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-semibold text-white">
-            <%= current_user.name&.first&.upcase || "U" %>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-medium text-gray-900 truncate"><%= current_user.name %></p>
-            <p class="text-[11px] text-gray-500 truncate"><%= current_user.role_name %></p>
-          </div>
-          <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "text-gray-400 hover:text-red-500 transition" do %>
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-            </svg>
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+          <%= link_to dashboard_path, class: "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium #{controller_name == 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}" do %>
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
+            Dashboard
           <% end %>
+
+          <%= link_to customers_path, class: "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium #{controller_name == 'customers' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}" do %>
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+            Customers
+          <% end %>
+
+          <%= link_to vehicles_path, class: "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium #{controller_name == 'vehicles' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}" do %>
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.079-.504 1.025-1.122a18.97 18.97 0 00-3.07-8.428" /></svg>
+            Vehicles
+          <% end %>
+
+          <%= link_to job_cards_path, class: "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium #{controller_name == 'job_cards' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}" do %>
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3l1.5 1.5 3-3.75" /></svg>
+            Job Cards
+          <% end %>
+
+          <%= link_to technicians_path, class: "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium #{controller_name == 'technicians' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}" do %>
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085" /></svg>
+            Technicians
+          <% end %>
+
+          <!-- Inventory dropdown -->
+          <div data-controller="dropdown">
+            <button data-action="click->dropdown#toggle" class="flex items-center justify-between w-full rounded-lg px-3 py-2 text-xs font-medium <%= %w[spare_parts suppliers warehouses purchase_orders inventory_movements].include?(controller_name) ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50' %>">
+              <span class="flex items-center gap-3">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+                Inventory
+              </span>
+              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            </button>
+            <div data-dropdown-target="menu" class="<%= %w[spare_parts suppliers warehouses purchase_orders inventory_movements].include?(controller_name) ? '' : 'hidden' %> ml-7 mt-1 space-y-1">
+              <%= link_to "Parts", spare_parts_path, class: "block rounded-lg px-3 py-1.5 text-xs #{controller_name == 'spare_parts' ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}" %>
+              <%= link_to "Suppliers", suppliers_path, class: "block rounded-lg px-3 py-1.5 text-xs #{controller_name == 'suppliers' ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}" %>
+              <%= link_to "Warehouses", warehouses_path, class: "block rounded-lg px-3 py-1.5 text-xs #{controller_name == 'warehouses' ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}" %>
+              <%= link_to "Purchase Orders", purchase_orders_path, class: "block rounded-lg px-3 py-1.5 text-xs #{controller_name == 'purchase_orders' ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}" %>
+              <%= link_to "Stock Movements", inventory_movements_path, class: "block rounded-lg px-3 py-1.5 text-xs #{controller_name == 'inventory_movements' ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}" %>
+            </div>
+          </div>
+
+          <!-- Reports dropdown -->
+          <div data-controller="dropdown">
+            <button data-action="click->dropdown#toggle" class="flex items-center justify-between w-full rounded-lg px-3 py-2 text-xs font-medium <%= controller_name == 'reports' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50' %>">
+              <span class="flex items-center gap-3">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
+                Reports
+              </span>
+              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            </button>
+            <div data-dropdown-target="menu" class="<%= controller_name == 'reports' ? '' : 'hidden' %> ml-7 mt-1 space-y-1">
+              <%= link_to "Revenue", reports_revenue_path, class: "block rounded-lg px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50" %>
+              <%= link_to "Technician Productivity", reports_technician_productivity_path, class: "block rounded-lg px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50" %>
+              <%= link_to "Parts Usage", reports_parts_usage_path, class: "block rounded-lg px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50" %>
+              <%= link_to "Vehicle Turnaround", reports_vehicle_turnaround_path, class: "block rounded-lg px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50" %>
+              <%= link_to "Inventory Valuation", reports_inventory_valuation_path, class: "block rounded-lg px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50" %>
+            </div>
+          </div>
+
+          <!-- WhatsApp dropdown -->
+          <div data-controller="dropdown">
+            <button data-action="click->dropdown#toggle" class="flex items-center justify-between w-full rounded-lg px-3 py-2 text-xs font-medium <%= %w[whatsapp_chats whatsapp_marketing].include?(controller_name) ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50' %>">
+              <span class="flex items-center gap-3">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
+                WhatsApp
+              </span>
+              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            </button>
+            <div data-dropdown-target="menu" class="<%= %w[whatsapp_chats whatsapp_marketing].include?(controller_name) ? '' : 'hidden' %> ml-7 mt-1 space-y-1">
+              <%= link_to "Chats", whatsapp_chats_path, class: "block rounded-lg px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50" %>
+              <%= link_to "Marketing", whatsapp_marketing_index_path, class: "block rounded-lg px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50" %>
+            </div>
+          </div>
+
+          <!-- Settings dropdown -->
+          <div data-controller="dropdown">
+            <button data-action="click->dropdown#toggle" class="flex items-center justify-between w-full rounded-lg px-3 py-2 text-xs font-medium <%= %w[users roles service_types branches].include?(controller_name) ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50' %>">
+              <span class="flex items-center gap-3">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                Settings
+              </span>
+              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+            </button>
+            <div data-dropdown-target="menu" class="<%= %w[users roles service_types branches].include?(controller_name) ? '' : 'hidden' %> ml-7 mt-1 space-y-1">
+              <%= link_to "Users", users_path, class: "block rounded-lg px-3 py-1.5 text-xs #{controller_name == 'users' ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}" %>
+              <%= link_to "Roles", roles_path, class: "block rounded-lg px-3 py-1.5 text-xs #{controller_name == 'roles' ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}" %>
+              <%= link_to "Service Types", service_types_path, class: "block rounded-lg px-3 py-1.5 text-xs #{controller_name == 'service_types' ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}" %>
+              <%= link_to "Branches", branches_path, class: "block rounded-lg px-3 py-1.5 text-xs #{controller_name == 'branches' ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}" %>
+            </div>
+          </div>
+        </nav>
+
+        <!-- User info -->
+        <div class="border-t border-gray-200 px-4 py-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="h-7 w-7 rounded-full bg-indigo-100 flex items-center justify-center">
+                <span class="text-xs font-medium text-indigo-600"><%= current_user.name&.first&.upcase %></span>
+              </div>
+              <div>
+                <p class="text-xs font-medium text-gray-900"><%= current_user.name %></p>
+                <p class="text-[10px] text-gray-500"><%= current_user.email %></p>
+              </div>
+            </div>
+            <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "text-gray-400 hover:text-red-500 transition" do %>
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
+            <% end %>
+          </div>
         </div>
       </div>
     </aside>
 
-    <!-- Main Content -->
-    <div class="flex-1 ml-64">
-      <!-- Top Navbar -->
-      <header class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-gray-200 bg-white/95 backdrop-blur px-6">
-        <h1 class="text-base font-semibold text-gray-900"><%= yield :page_title %></h1>
-        <div class="flex items-center gap-4">
-          <span class="text-xs text-gray-500"><%= current_user.email %></span>
+    <!-- Main content -->
+    <div class="lg:pl-64">
+      <!-- Top bar -->
+      <header class="sticky top-0 z-30 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 lg:px-6">
+        <button data-action="click->sidebar#toggle" class="lg:hidden text-gray-500 hover:text-gray-900">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+        </button>
+        <h1 class="text-sm font-semibold text-gray-900"><%= yield(:page_title) || "Dashboard" %></h1>
+        <div class="flex items-center gap-3">
+          <%= link_to service_reminders_path, class: "text-gray-400 hover:text-gray-600", title: "Service Reminders" do %>
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+          <% end %>
         </div>
       </header>
 
-      <!-- Flash Messages -->
-      <% if notice.present? %>
-        <div class="mx-6 mt-4 rounded-lg bg-green-50 border border-green-200 p-3 text-xs text-green-700"><%= notice %></div>
-      <% end %>
-      <% if alert.present? %>
-        <div class="mx-6 mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700"><%= alert %></div>
-      <% end %>
-
-      <!-- Page Content -->
-      <main class="p-6">
+      <!-- Page content -->
+      <main class="p-4 lg:p-6">
+        <% if flash[:notice] %>
+          <div class="mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-xs text-green-700"><%= flash[:notice] %></div>
+        <% end %>
+        <% if flash[:alert] %>
+          <div class="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-xs text-red-700"><%= flash[:alert] %></div>
+        <% end %>
         <%= yield %>
       </main>
     </div>
-  </div>
+  <% else %>
+    <%= yield %>
+  <% end %>
 </body>
 </html>

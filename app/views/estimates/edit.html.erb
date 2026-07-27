@@ -1,0 +1,12 @@
+<% content_for :page_title, "Edit Estimate" %>
+
+<div class="max-w-4xl">
+  <div class="mb-6">
+    <h2 class="text-lg font-semibold text-gray-900">Edit Estimate</h2>
+    <p class="text-xs text-gray-500 mt-1"><%= @estimate.estimate_number %> | Job Card: <%= @job_card.job_card_number %></p>
+  </div>
+
+  <div class="rounded-xl border border-gray-200 bg-white p-6">
+    <%= render "form", estimate: @estimate %>
+  </div>
+</div>

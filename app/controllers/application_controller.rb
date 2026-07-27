@@ -9,23 +9,16 @@ class ApplicationController < ActionController::Base
   layout :layout_by_resource
 
   CONTROLLER_FEATURE_MAP = {
-    "dashboard"            => :dashboard,
-    "customers"            => :customers,
-    "leads"                => :leads,
-    "users"                => :users,
-    "roles"                => :roles,
-    "whatsapp_marketing"   => :whatsapp,
-    "whatsapp_settings"    => :whatsapp,
-    "whatsapp_templates"   => :whatsapp,
-    "follow_ups"           => :whatsapp,
-    "follow_up_campaigns"  => :whatsapp,
-    "whatsapp_chats"       => :whatsapp,
-    "quick_responses"      => :whatsapp,
-    "auto_reply_rules"     => :whatsapp,
-    "scheduled_messages"   => :whatsapp,
-    "whatsapp_guide"       => :whatsapp,
-    "whatsapp_menus"       => :whatsapp,
-    "csat"                 => :csat
+    "dashboard" => :dashboard, "customers" => :customers, "vehicles" => :vehicles,
+    "job_cards" => :job_cards, "inspections" => :job_cards,
+    "estimates" => :estimates, "invoices" => :estimates, "payments" => :estimates,
+    "spare_parts" => :inventory, "suppliers" => :inventory, "warehouses" => :inventory,
+    "purchase_orders" => :inventory, "inventory_movements" => :inventory,
+    "technicians" => :technicians, "technician_assignments" => :technicians,
+    "service_types" => :dashboard, "branches" => :dashboard,
+    "service_reminders" => :vehicles, "reports" => :reports,
+    "users" => :users, "roles" => :roles,
+    "whatsapp_chats" => :whatsapp, "whatsapp_marketing" => :whatsapp
   }.freeze
 
   private

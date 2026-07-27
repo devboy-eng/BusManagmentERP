@@ -1,0 +1,80 @@
+<%= form_with(model: spare_part, class: "space-y-6") do |f| %>
+  <% if spare_part.errors.any? %>
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+      <p class="text-xs font-medium text-red-700"><%= pluralize(spare_part.errors.count, "error") %> prevented this spare part from being saved:</p>
+      <ul class="mt-2 list-disc list-inside text-xs text-red-600">
+        <% spare_part.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Part Number *</label>
+      <%= f.text_field :part_number, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter part number" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Name *</label>
+      <%= f.text_field :name, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter part name" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Category</label>
+      <%= f.select :category, SparePart::CATEGORIES, { include_blank: "Select category" }, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Brand</label>
+      <%= f.text_field :brand, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter brand" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Compatible Makes</label>
+      <%= f.text_field :compatible_makes, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Tata, Ashok Leyland" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Unit</label>
+      <%= f.text_field :unit, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g. Pcs, Litres, Kg" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Selling Price</label>
+      <%= f.number_field :selling_price, step: 0.01, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter selling price" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Cost Price</label>
+      <%= f.number_field :cost_price, step: 0.01, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter cost price" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Reorder Level</label>
+      <%= f.number_field :reorder_level, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Minimum stock level" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Current Stock</label>
+      <%= f.number_field :current_stock, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter current stock" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">HSN Code</label>
+      <%= f.text_field :hsn_code, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter HSN code" %>
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1.5">Warranty (Months)</label>
+      <%= f.number_field :warranty_months, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter warranty months" %>
+    </div>
+  </div>
+
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1.5">Description</label>
+    <%= f.text_area :description, rows: 3, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none", placeholder: "Enter description" %>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <label class="flex items-center gap-2 text-xs text-gray-600">
+      <%= f.check_box :active, class: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+      Active
+    </label>
+  </div>
+
+  <div class="flex items-center gap-3 pt-2">
+    <%= f.submit class: "rounded-lg bg-indigo-600 px-6 py-2.5 text-xs font-medium text-white hover:bg-indigo-500 transition cursor-pointer" %>
+    <%= link_to "Cancel", spare_parts_path, class: "rounded-lg border border-gray-300 px-6 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition" %>
+  </div>
+<% end %>

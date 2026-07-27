@@ -13,12 +13,9 @@ Rails.application.routes.draw do
     post "whatsapp", to: "whatsapp_webhooks#receive"
   end
 
-  # CSAT Feedback — public, token-authenticated
-  get  "feedback/:token", to: "feedback#show",   as: :feedback
-  post "feedback/:token", to: "feedback#submit", as: :submit_feedback
-
   get "up" => "rails/health#show", as: :rails_health_check
   root "dashboard#index"
+  get "dashboard", to: "dashboard#index"
 
   resources :customers do
     member do
@@ -31,24 +28,60 @@ Rails.application.routes.draw do
     resources :comments, only: [:create]
   end
 
-  resources :leads do
+  resources :vehicles do
     member do
-      patch :update_status
+      get :service_history
     end
+  end
+
+  resources :job_cards do
+    member do
+      patch :advance_status
+      post :send_estimate
+      post :generate_invoice
+      post :issue_gate_pass
+    end
+    resources :inspections, only: [:new, :create, :show]
+    resources :estimates, only: [:new, :create, :show, :edit, :update]
+    resources :technician_assignments, only: [:create, :update, :destroy]
+  end
+
+  resources :invoices, only: [:index, :show, :edit, :update]
+  resources :payments, only: [:index, :new, :create]
+  resources :technicians
+  resources :service_types, except: [:show]
+  resources :branches, except: [:show]
+  resources :spare_parts do
     collection do
-      get :bulk_upload
-      post :import
+      get :low_stock
     end
-    resources :comments, only: [:create]
   end
-
-  resources :users do
+  resources :suppliers
+  resources :warehouses
+  resources :purchase_orders do
     member do
-      patch :toggle_status
+      patch :receive
     end
   end
-  resources :roles
+  resources :inventory_movements, only: [:index]
+  resources :service_reminders, except: [:show]
 
+  # Reports
+  get "reports", to: "reports#show"
+  get "reports/revenue", to: "reports#revenue"
+  get "reports/technician_productivity", to: "reports#technician_productivity"
+  get "reports/parts_usage", to: "reports#parts_usage"
+  get "reports/vehicle_turnaround", to: "reports#vehicle_turnaround"
+  get "reports/inventory_valuation", to: "reports#inventory_valuation"
+
+  # Public approval routes (no auth)
+  get "approve/:token", to: "approvals#show", as: :customer_approval
+  post "approve/:token", to: "approvals#approve"
+  post "approve/:token/reject", to: "approvals#reject", as: :customer_rejection
+  get "manager-approve/:token", to: "approvals#manager_show", as: :manager_approval
+  post "manager-approve/:token", to: "approvals#manager_approve"
+
+  # WhatsApp
   resources :whatsapp_chats, only: [:index, :show] do
     member do
       post :send_reply
@@ -77,6 +110,10 @@ Rails.application.routes.draw do
 
   resources :whatsapp_marketing, only: [:index] do
     collection do
+      post :send_quick_whatsapp
+      post :send_bulk_whatsapp
+      get :templates
+      get :template_analytics
       get :compose
       post :send_message
       post :send_template
@@ -111,24 +148,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :follow_ups, only: [:index, :new, :create, :destroy] do
+  # Users/Roles
+  resources :users do
     member do
-      patch :cancel
+      patch :toggle_active
     end
   end
-
-  resources :follow_up_campaigns, only: [:show, :destroy], path: "follow-up-campaigns" do
-    member do
-      patch :cancel
-    end
-  end
-
-  resources :csat, only: [:index] do
-    collection do
-      post :generate_link
-    end
-    member do
-      get :agent
-    end
-  end
+  resources :roles
 end
