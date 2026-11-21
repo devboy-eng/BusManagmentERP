@@ -31,7 +31,14 @@ test:
     migrations_paths: db/queue_migrate
 
 production:
-  adapter: postgresql
-  encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 15 } %>
-  url: <%= ENV["DATABASE_URL"] %>
+  primary:
+    adapter: postgresql
+    encoding: unicode
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 15 } %>
+    url: <%= ENV["DATABASE_URL"] %>
+  queue:
+    adapter: postgresql
+    encoding: unicode
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 15 } %>
+    url: <%= ENV["DATABASE_URL"] %>
+    migrations_paths: db/queue_migrate

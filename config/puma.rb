@@ -14,9 +14,9 @@ threads min_threads_count, max_threads_count
 rails_env = ENV.fetch("RAILS_ENV") { "development" }
 
 if rails_env == "production"
-  worker_count = Integer(ENV.fetch("WEB_CONCURRENCY") { 2 })
+  worker_count = Integer(ENV.fetch("WEB_CONCURRENCY") { 0 })
   workers worker_count
-  preload_app!
+  preload_app! if worker_count > 0
 end
 # Specifies the `worker_timeout` threshold that Puma will use to wait before
 # terminating a worker in development environments.
