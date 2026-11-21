@@ -5,7 +5,7 @@ class ServiceReminderService
       begin
         message = "Hello #{reminder.customer.name}, your vehicle #{reminder.vehicle.registration_number} " \
                   "#{reminder.reminder_type.titleize} is due on #{reminder.due_date.strftime('%d %b %Y')}. " \
-                  "Please schedule your visit. - Bus Service Pro"
+                  "Please schedule your visit. - Kuposu Bus Management"
         WhatsappService.new.send_and_log(to: reminder.customer.phone, body: message, contact: reminder.customer)
         reminder.update(status: :sent, sent_at: Time.current)
       rescue => e

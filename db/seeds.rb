@@ -1,4 +1,4 @@
-puts "Seeding Bus Service Pro..."
+puts "Seeding Kuposu Bus Management..."
 
 # Default Branch
 branch = Branch.find_or_create_by!(code: "HQ") do |b|
